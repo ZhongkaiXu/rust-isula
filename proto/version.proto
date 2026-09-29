@@ -1,0 +1,18 @@
+// Version RPC fields from iSulad v2.1.5 container.proto.
+syntax = "proto3";
+package containers;
+
+service ContainerService {
+    rpc Version(VersionRequest) returns (VersionResponse);
+}
+
+message VersionRequest {}
+
+message VersionResponse {
+    string version = 1;
+    string git_commit = 2;
+    string build_time = 3;
+    string root_path = 4;
+    uint32 cc = 5;
+    string errmsg = 6;
+}
