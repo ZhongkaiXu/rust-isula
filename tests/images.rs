@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use std::process::{Command, Output};
 
-use risula::grpc::images_proto::{self, Descriptor, Image, ListImagesRequest, ListImagesResponse};
+use risula::grpc::images_proto::{
+    self, Descriptor, Image, ListImagesRequest, ListImagesResponse, LoadImageRequest,
+    LoadImageResponse,
+};
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
 use tonic::{Request, Response, Status};
@@ -21,6 +24,13 @@ impl images_proto::images_service_server::ImagesService for FakeImages {
             return Err(Status::invalid_argument("wrong filters"));
         }
         Ok(Response::new(self.reply.clone()))
+    }
+
+    async fn load(
+        &self,
+        _request: Request<LoadImageRequest>,
+    ) -> Result<Response<LoadImageResponse>, Status> {
+        Err(Status::unimplemented("load"))
     }
 }
 

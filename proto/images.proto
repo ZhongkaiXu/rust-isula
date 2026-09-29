@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 service ImagesService {
     rpc List(ListImagesRequest) returns (ListImagesResponse);
+    rpc Load(LoadImageRequest) returns (LoadImageResponse);
 }
 
 message Descriptor {
@@ -27,4 +28,15 @@ message ListImagesResponse {
     repeated Image images = 1;
     uint32 cc = 2;
     string errmsg = 3;
+}
+
+message LoadImageRequest {
+    string file = 1;
+    string type = 2;
+    string tag = 3;
+}
+
+message LoadImageResponse {
+    uint32 cc = 1;
+    string errmsg = 2;
 }

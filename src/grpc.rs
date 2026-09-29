@@ -81,3 +81,25 @@ pub async fn list_images(
     }
     Ok(response.images)
 }
+
+pub async fn load_image(host: &str, file: &str, tag: &str) -> Result<(), String> {
+    let channel = connect(host).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .load(images_proto::LoadImageRequest {
+            file: file.to_string(),
+            r#type: "oci".to_string(),
+            tag: tag.to_string(),
+        })
+        .await
+        .map_err(|error| format!("load RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}
