@@ -1,8 +1,13 @@
+use std::collections::HashMap;
 use std::time::Duration;
 use tonic::transport::{Channel, Endpoint};
 
 pub mod proto {
     tonic::include_proto!("containers");
+}
+
+pub mod images_proto {
+    tonic::include_proto!("images");
 }
 
 pub async fn connect(host: &str) -> Result<Channel, String> {
@@ -54,4 +59,25 @@ pub async fn info(host: &str) -> Result<proto::InfoResponse, String> {
         ));
     }
     Ok(response)
+}
+
+pub async fn list_images(
+    host: &str,
+    filters: HashMap<String, String>,
+) -> Result<Vec<images_proto::Image>, String> {
+    let channel = connect(host).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .list(images_proto::ListImagesRequest { filters })
+        .await
+        .map_err(|error| format!("images RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response.images)
 }

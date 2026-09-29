@@ -8,6 +8,8 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tonic = "0.14.6"
 tonic-prost = "0.14.6"
 prost = "0.14"
+prost-types = "0.14"
+chrono = "0.4.35"
 
 [build-dependencies]
 protoc-bin-vendored = "3.2.0"

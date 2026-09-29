@@ -1,0 +1,30 @@
+// List RPC fields from iSulad v2.1.5 images.proto.
+syntax = "proto3";
+package images;
+
+import "google/protobuf/timestamp.proto";
+
+service ImagesService {
+    rpc List(ListImagesRequest) returns (ListImagesResponse);
+}
+
+message Descriptor {
+    string digest = 2;
+    int64 size = 3;
+}
+
+message Image {
+    string name = 1;
+    Descriptor target = 3;
+    google.protobuf.Timestamp created_at = 4;
+}
+
+message ListImagesRequest {
+    map<string, string> filters = 1;
+}
+
+message ListImagesResponse {
+    repeated Image images = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
