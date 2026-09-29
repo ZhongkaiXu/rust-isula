@@ -1,0 +1,48 @@
+// Version and Info RPC fields from iSulad v2.1.5 container.proto.
+syntax = "proto3";
+package containers;
+
+service ContainerService {
+    rpc Version(VersionRequest) returns (VersionResponse);
+    rpc Info(InfoRequest) returns (InfoResponse);
+}
+
+message VersionRequest {}
+
+message VersionResponse {
+    string version = 1;
+    string git_commit = 2;
+    string build_time = 3;
+    string root_path = 4;
+    uint32 cc = 5;
+    string errmsg = 6;
+}
+
+message InfoRequest {}
+
+message InfoResponse {
+    uint32 cc = 1;
+    string errmsg = 2;
+    string version = 3;
+    uint32 containers_num = 4;
+    uint32 c_running = 5;
+    uint32 c_paused = 6;
+    uint32 c_stopped = 7;
+    uint32 images_num = 8;
+    string kversion = 9;
+    string os_type = 10;
+    string architecture = 11;
+    string nodename = 12;
+    uint32 cpus = 13;
+    string operating_system = 14;
+    string cgroup_driver = 15;
+    string logging_driver = 16;
+    string huge_page_size = 17;
+    string isulad_root_dir = 18;
+    uint32 total_mem = 19;
+    string http_proxy = 20;
+    string https_proxy = 21;
+    string no_proxy = 22;
+    string driver_name = 23;
+    string driver_status = 24;
+}

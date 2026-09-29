@@ -37,3 +37,21 @@ pub async fn version(host: &str) -> Result<proto::VersionResponse, String> {
     }
     Ok(response)
 }
+
+pub async fn info(host: &str) -> Result<proto::InfoResponse, String> {
+    let channel = connect(host).await?;
+    let mut client = proto::container_service_client::ContainerServiceClient::new(channel);
+    let response = client
+        .info(proto::InfoRequest {})
+        .await
+        .map_err(|error| format!("info RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response)
+}
