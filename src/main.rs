@@ -2,7 +2,7 @@ use std::env;
 use std::process;
 
 use risula::cli::{self, Action};
-use risula::{grpc, images, import, load, login, logout, pull, rmi, search, tag};
+use risula::{commands::images, grpc};
 
 #[tokio::main]
 async fn main() {
@@ -36,55 +36,55 @@ async fn main() {
             }
         }
         Ok(Action::Invoke(command)) if command.name == "images" => {
-            if let Err(error) = images::run(&command).await {
+            if let Err(error) = images::list::run(&command).await {
                 eprintln!("risula images: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "import" => {
-            if let Err(error) = import::run(&command).await {
+            if let Err(error) = images::import::run(&command).await {
                 eprintln!("risula import: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "login" => {
-            if let Err(error) = login::run(&command).await {
+            if let Err(error) = images::login::run(&command).await {
                 eprintln!("risula login: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "logout" => {
-            if let Err(error) = logout::run(&command).await {
+            if let Err(error) = images::logout::run(&command).await {
                 eprintln!("risula logout: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "load" => {
-            if let Err(error) = load::run(&command).await {
+            if let Err(error) = images::load::run(&command).await {
                 eprintln!("risula load: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "pull" => {
-            if let Err(error) = pull::run(&command).await {
+            if let Err(error) = images::pull::run(&command).await {
                 eprintln!("risula pull: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "search" => {
-            if let Err(error) = search::run(&command).await {
+            if let Err(error) = images::search::run(&command).await {
                 eprintln!("risula search: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "tag" => {
-            if let Err(error) = tag::run(&command).await {
+            if let Err(error) = images::tag::run(&command).await {
                 eprintln!("risula tag: {error}");
                 process::exit(1);
             }
         }
         Ok(Action::Invoke(command)) if command.name == "rmi" => {
-            if !rmi::run(&command).await {
+            if !images::rmi::run(&command).await {
                 process::exit(1);
             }
         }

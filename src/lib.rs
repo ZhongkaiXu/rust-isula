@@ -1,11 +1,3 @@
 pub mod cli;
+pub mod commands;
 pub mod grpc;
-pub mod images;
-pub mod import;
-pub mod load;
-pub mod login;
-pub mod logout;
-pub mod pull;
-pub mod rmi;
-pub mod search;
-pub mod tag;
