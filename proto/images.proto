@@ -1,4 +1,4 @@
-// List RPC fields from iSulad v2.1.5 images.proto.
+// Image RPC fields from iSulad v2.1.5 images.proto.
 syntax = "proto3";
 package images;
 
@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 service ImagesService {
     rpc List(ListImagesRequest) returns (ListImagesResponse);
+    rpc Delete(DeleteImageRequest) returns (DeleteImageResponse);
     rpc Load(LoadImageRequest) returns (LoadImageResponse);
     rpc PullImage(PullImageRequest) returns (stream PullImageResponse);
 }
@@ -62,4 +63,15 @@ message PullImageResponse {
     string image_ref = 1;
     string stream = 2;
     bytes progress_data = 3;
+}
+
+message DeleteImageRequest {
+    string name = 1;
+    bool force = 2;
+}
+
+message DeleteImageResponse {
+    string name = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
 }

@@ -134,3 +134,24 @@ pub async fn pull_image(
         .map(|response| response.into_inner())
         .map_err(|error| format!("pull RPC failed: {error}"))
 }
+
+pub async fn delete_image(host: &str, name: &str, force: bool) -> Result<(), String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .delete(images_proto::DeleteImageRequest {
+            name: name.to_string(),
+            force,
+        })
+        .await
+        .map_err(|error| format!("delete RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}

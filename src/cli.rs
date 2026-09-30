@@ -284,6 +284,8 @@ const IMAGES_OPTIONS: &[OptionSpec] = &[
     flag("quiet", Some('q'), "Only display image names"),
 ];
 
+const RMI_OPTIONS: &[OptionSpec] = &[flag("force", Some('f'), "Force removal of the image")];
+
 const PS_OPTIONS: &[OptionSpec] = &[
     flag("all", Some('a'), "Display all containers"),
     value("filter", Some('f'), "Filter output by condition"),
@@ -298,6 +300,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
     match command {
         "load" => LOAD_OPTIONS,
         "images" => IMAGES_OPTIONS,
+        "rmi" => RMI_OPTIONS,
         "ps" => PS_OPTIONS,
         _ => &[],
     }
@@ -381,6 +384,8 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         "load" if !options.iter().any(|option| option.name == "input") => {
             Err("load requires -i or --input".to_string())
         }
+        "rmi" if args.is_empty() => Err("rmi requires at least one image name".to_string()),
+        "rmi" if args.len() >= 1000 => Err("too many images to remove".to_string()),
         "ps" | "version" | "info" | "network ls" | "volume ls" | "volume prune"
             if !args.is_empty() =>
         {
@@ -596,6 +601,11 @@ mod tests {
     fn validates_image_arguments() {
         assert_eq!(parse(&words("pull"), None).unwrap_err().exit_code, 1);
         assert_eq!(parse(&words("load"), None).unwrap_err().exit_code, 1);
+        assert_eq!(parse(&words("rmi"), None).unwrap_err().exit_code, 1);
+        assert!(parse(&words("rmi -f image:tag"), None).is_ok());
+        let mut too_many = vec!["rmi".to_string()];
+        too_many.extend(std::iter::repeat_n("image".to_string(), 1000));
+        assert_eq!(parse(&too_many, None).unwrap_err().exit_code, 1);
         assert_eq!(
             parse(&words("pull --bad"), None).unwrap_err().exit_code,
             125

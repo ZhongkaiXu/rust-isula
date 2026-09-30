@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::process::{Command, Output};
 
 use risula::grpc::images_proto::{
-    self, Descriptor, Image, ListImagesRequest, ListImagesResponse, LoadImageRequest,
-    LoadImageResponse, PullImageRequest, PullImageResponse,
+    self, DeleteImageRequest, DeleteImageResponse, Descriptor, Image, ListImagesRequest,
+    ListImagesResponse, LoadImageRequest, LoadImageResponse, PullImageRequest, PullImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -24,6 +24,13 @@ impl images_proto::images_service_server::ImagesService for FakeImages {
             return Err(Status::invalid_argument("wrong filters"));
         }
         Ok(Response::new(self.reply.clone()))
+    }
+
+    async fn delete(
+        &self,
+        _request: Request<DeleteImageRequest>,
+    ) -> Result<Response<DeleteImageResponse>, Status> {
+        Err(Status::unimplemented("delete"))
     }
 
     async fn load(

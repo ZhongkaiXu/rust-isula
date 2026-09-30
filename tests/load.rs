@@ -2,8 +2,8 @@ use std::fs;
 use std::process::{Command, Output};
 
 use risula::grpc::images_proto::{
-    self, ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse,
-    PullImageRequest, PullImageResponse,
+    self, DeleteImageRequest, DeleteImageResponse, ListImagesRequest, ListImagesResponse,
+    LoadImageRequest, LoadImageResponse, PullImageRequest, PullImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -21,6 +21,13 @@ impl images_proto::images_service_server::ImagesService for FakeLoad {
         _request: Request<ListImagesRequest>,
     ) -> Result<Response<ListImagesResponse>, Status> {
         Err(Status::unimplemented("list"))
+    }
+
+    async fn delete(
+        &self,
+        _request: Request<DeleteImageRequest>,
+    ) -> Result<Response<DeleteImageResponse>, Status> {
+        Err(Status::unimplemented("delete"))
     }
 
     async fn load(

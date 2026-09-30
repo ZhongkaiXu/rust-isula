@@ -2,7 +2,7 @@ use std::env;
 use std::process;
 
 use risula::cli::{self, Action};
-use risula::{grpc, images, load, pull};
+use risula::{grpc, images, load, pull, rmi};
 
 #[tokio::main]
 async fn main() {
@@ -50,6 +50,11 @@ async fn main() {
         Ok(Action::Invoke(command)) if command.name == "pull" => {
             if let Err(error) = pull::run(&command).await {
                 eprintln!("risula pull: {error}");
+                process::exit(1);
+            }
+        }
+        Ok(Action::Invoke(command)) if command.name == "rmi" => {
+            if !rmi::run(&command).await {
                 process::exit(1);
             }
         }

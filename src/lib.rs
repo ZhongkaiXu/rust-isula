@@ -3,3 +3,4 @@ pub mod grpc;
 pub mod images;
 pub mod load;
 pub mod pull;
+pub mod rmi;
