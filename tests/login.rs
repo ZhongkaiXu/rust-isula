@@ -5,7 +5,8 @@ use std::sync::{Arc, Mutex};
 use risula::grpc::images_proto::{
     self, DeleteImageRequest, DeleteImageResponse, ImportRequest, ImportResponse,
     ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse, LoginRequest,
-    LoginResponse, PullImageRequest, PullImageResponse, TagImageRequest, TagImageResponse,
+    LoginResponse, LogoutRequest, LogoutResponse, PullImageRequest, PullImageResponse,
+    TagImageRequest, TagImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -63,6 +64,13 @@ impl images_proto::images_service_server::ImagesService for FakeLogin {
             return Err(Status::unavailable("registry service unavailable"));
         }
         Ok(Response::new(self.reply.clone()))
+    }
+
+    async fn logout(
+        &self,
+        _request: Request<LogoutRequest>,
+    ) -> Result<Response<LogoutResponse>, Status> {
+        Err(Status::unimplemented("logout"))
     }
 
     type PullImageStream =

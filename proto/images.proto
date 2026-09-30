@@ -11,6 +11,7 @@ service ImagesService {
     rpc Load(LoadImageRequest) returns (LoadImageResponse);
     rpc Import(ImportRequest) returns (ImportResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Logout(LogoutRequest) returns (LogoutResponse);
     rpc PullImage(PullImageRequest) returns (stream PullImageResponse);
 }
 
@@ -75,6 +76,16 @@ message LoginRequest {
 }
 
 message LoginResponse {
+    uint32 cc = 1;
+    string errmsg = 2;
+}
+
+message LogoutRequest {
+    string server = 1;
+    string type = 2;
+}
+
+message LogoutResponse {
     uint32 cc = 1;
     string errmsg = 2;
 }

@@ -92,6 +92,27 @@ pub async fn list_images(
     Ok(response.images)
 }
 
+pub async fn logout(host: &str, server: &str) -> Result<(), String> {
+    let channel = connect(host).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .logout(images_proto::LogoutRequest {
+            server: server.to_string(),
+            r#type: "oci".to_string(),
+        })
+        .await
+        .map_err(|error| format!("logout RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}
+
 pub async fn login(host: &str, server: &str, username: &str, password: &str) -> Result<(), String> {
     if !host.starts_with("unix://") {
         return Err("login requires a Unix socket; TCP credentials are not encrypted".to_string());

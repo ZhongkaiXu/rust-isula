@@ -384,6 +384,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "logout" if args.len() != 1 || args[0].is_empty() => {
+            Err("logout requires one registry server".to_string())
+        }
         "login" if args.len() != 1 || args[0].is_empty() => {
             Err("login requires one registry server".to_string())
         }
@@ -615,6 +618,12 @@ mod tests {
 
     #[test]
     fn validates_image_arguments() {
+        assert_eq!(parse(&words("logout"), None).unwrap_err().exit_code, 1);
+        assert_eq!(
+            parse(&words("logout one two"), None).unwrap_err().exit_code,
+            1
+        );
+        assert!(parse(&words("logout registry.test"), None).is_ok());
         assert_eq!(parse(&words("login"), None).unwrap_err().exit_code, 1);
         assert_eq!(
             parse(&words("login one two"), None).unwrap_err().exit_code,
