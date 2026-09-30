@@ -187,7 +187,7 @@ const COMMANDS: &[CommandSpec] = &[
     command(
         "tag",
         "Create a new image tag",
-        "tag SOURCE_IMAGE TARGET_IMAGE",
+        "tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]",
     ),
     command(
         "top",
@@ -377,6 +377,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "tag" if args.len() != 2 || args.iter().any(String::is_empty) => {
+            Err("tag requires a source and target image".to_string())
+        }
         "import" if args.len() != 2 || args.iter().any(String::is_empty) => {
             Err("import requires a file and an image name".to_string())
         }
@@ -602,6 +605,15 @@ mod tests {
 
     #[test]
     fn validates_image_arguments() {
+        assert_eq!(parse(&words("tag"), None).unwrap_err().exit_code, 1);
+        assert_eq!(parse(&words("tag source"), None).unwrap_err().exit_code, 1);
+        assert_eq!(
+            parse(&words("tag source target extra"), None)
+                .unwrap_err()
+                .exit_code,
+            1
+        );
+        assert!(parse(&words("tag source:old target:new"), None).is_ok());
         assert_eq!(parse(&words("import"), None).unwrap_err().exit_code, 1);
         assert_eq!(
             parse(&words("import image.tar"), None)

@@ -92,6 +92,27 @@ pub async fn list_images(
     Ok(response.images)
 }
 
+pub async fn tag_image(host: &str, source: &str, destination: &str) -> Result<(), String> {
+    let channel = connect(host).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .tag(images_proto::TagImageRequest {
+            src_name: source.to_string(),
+            dest_name: destination.to_string(),
+        })
+        .await
+        .map_err(|error| format!("tag RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}
+
 pub async fn load_image(host: &str, file: &str, tag: &str) -> Result<(), String> {
     let channel = connect(host).await?;
     let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
