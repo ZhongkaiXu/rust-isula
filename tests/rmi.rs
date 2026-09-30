@@ -5,7 +5,7 @@ use risula::grpc::images_proto::{
     self, DeleteImageRequest, DeleteImageResponse, ImportRequest, ImportResponse,
     ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse, LoginRequest,
     LoginResponse, LogoutRequest, LogoutResponse, PullImageRequest, PullImageResponse,
-    TagImageRequest, TagImageResponse,
+    SearchRequest, SearchResponse, TagImageRequest, TagImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -79,6 +79,13 @@ impl images_proto::images_service_server::ImagesService for FakeDelete {
         _request: Request<LogoutRequest>,
     ) -> Result<Response<LogoutResponse>, Status> {
         Err(Status::unimplemented("logout"))
+    }
+
+    async fn search(
+        &self,
+        _request: Request<SearchRequest>,
+    ) -> Result<Response<SearchResponse>, Status> {
+        Err(Status::unimplemented("search"))
     }
 
     type PullImageStream =

@@ -292,6 +292,13 @@ const IMAGES_OPTIONS: &[OptionSpec] = &[
 
 const RMI_OPTIONS: &[OptionSpec] = &[flag("force", Some('f'), "Force removal of the image")];
 
+const SEARCH_OPTIONS: &[OptionSpec] = &[
+    value("limit", None, "Maximum number of results (default 25)"),
+    value("filter", Some('f'), "Filter results by condition"),
+    flag("no-trunc", None, "Do not truncate descriptions"),
+    value("format", None, "Format output with field placeholders"),
+];
+
 const PS_OPTIONS: &[OptionSpec] = &[
     flag("all", Some('a'), "Display all containers"),
     value("filter", Some('f'), "Filter output by condition"),
@@ -308,6 +315,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "login" => LOGIN_OPTIONS,
         "images" => IMAGES_OPTIONS,
         "rmi" => RMI_OPTIONS,
+        "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
         _ => &[],
     }
@@ -384,6 +392,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "search" if args.len() != 1 || args[0].is_empty() => {
+            Err("search requires one search term".to_string())
+        }
         "logout" if args.len() != 1 || args[0].is_empty() => {
             Err("logout requires one registry server".to_string())
         }
@@ -618,6 +629,16 @@ mod tests {
 
     #[test]
     fn validates_image_arguments() {
+        assert_eq!(parse(&words("search"), None).unwrap_err().exit_code, 1);
+        assert_eq!(
+            parse(&words("search one two"), None).unwrap_err().exit_code,
+            1
+        );
+        assert!(parse(
+            &words("search --limit 10 -f stars=3 --no-trunc alpine"),
+            None
+        )
+        .is_ok());
         assert_eq!(parse(&words("logout"), None).unwrap_err().exit_code, 1);
         assert_eq!(
             parse(&words("logout one two"), None).unwrap_err().exit_code,

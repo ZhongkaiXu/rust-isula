@@ -92,6 +92,33 @@ pub async fn list_images(
     Ok(response.images)
 }
 
+pub async fn search_images(
+    host: &str,
+    name: &str,
+    limit: u32,
+    filters: HashMap<String, String>,
+) -> Result<Vec<images_proto::SearchImage>, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .search(images_proto::SearchRequest {
+            search_name: name.to_string(),
+            limit,
+            filters,
+        })
+        .await
+        .map_err(|error| format!("search RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response.search_result)
+}
+
 pub async fn logout(host: &str, server: &str) -> Result<(), String> {
     let channel = connect(host).await?;
     let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);

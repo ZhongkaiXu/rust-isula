@@ -12,6 +12,7 @@ service ImagesService {
     rpc Import(ImportRequest) returns (ImportResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
     rpc Logout(LogoutRequest) returns (LogoutResponse);
+    rpc Search(SearchRequest) returns (SearchResponse);
     rpc PullImage(PullImageRequest) returns (stream PullImageResponse);
 }
 
@@ -88,6 +89,27 @@ message LogoutRequest {
 message LogoutResponse {
     uint32 cc = 1;
     string errmsg = 2;
+}
+
+message SearchImage {
+    int64 star_count = 1;
+    bool is_official = 2;
+    string name = 3;
+    bool is_automated = 4;
+    string description = 5;
+}
+
+message SearchRequest {
+    string search_name = 1;
+    uint32 limit = 2;
+    map<string, string> filters = 3;
+}
+
+message SearchResponse {
+    uint32 result_num = 1;
+    repeated SearchImage search_result = 2;
+    uint32 cc = 3;
+    string errmsg = 4;
 }
 
 message ImageSpec {

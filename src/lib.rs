@@ -7,4 +7,5 @@ pub mod login;
 pub mod logout;
 pub mod pull;
 pub mod rmi;
+pub mod search;
 pub mod tag;
