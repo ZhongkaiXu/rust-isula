@@ -3,7 +3,7 @@ use std::process::{Command, Output};
 
 use risula::grpc::images_proto::{
     self, Descriptor, Image, ListImagesRequest, ListImagesResponse, LoadImageRequest,
-    LoadImageResponse,
+    LoadImageResponse, PullImageRequest, PullImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -31,6 +31,16 @@ impl images_proto::images_service_server::ImagesService for FakeImages {
         _request: Request<LoadImageRequest>,
     ) -> Result<Response<LoadImageResponse>, Status> {
         Err(Status::unimplemented("load"))
+    }
+
+    type PullImageStream =
+        tokio_stream::wrappers::ReceiverStream<Result<PullImageResponse, Status>>;
+
+    async fn pull_image(
+        &self,
+        _request: Request<PullImageRequest>,
+    ) -> Result<Response<Self::PullImageStream>, Status> {
+        Err(Status::unimplemented("pull"))
     }
 }
 

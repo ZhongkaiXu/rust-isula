@@ -374,7 +374,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
-        "pull" if args.len() != 1 => Err("pull requires one image name".to_string()),
+        "pull" if args.len() != 1 || args[0].is_empty() => {
+            Err("pull requires one image name".to_string())
+        }
         "load" if !args.is_empty() => Err("load takes no positional arguments".to_string()),
         "load" if !options.iter().any(|option| option.name == "input") => {
             Err("load requires -i or --input".to_string())

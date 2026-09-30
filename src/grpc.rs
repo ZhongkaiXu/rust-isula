@@ -11,14 +11,24 @@ pub mod images_proto {
 }
 
 pub async fn connect(host: &str) -> Result<Channel, String> {
+    connect_with_timeout(host, Some(Duration::from_secs(5))).await
+}
+
+async fn connect_with_timeout(
+    host: &str,
+    request_timeout: Option<Duration>,
+) -> Result<Channel, String> {
     let address = match host.strip_prefix("tcp://") {
         Some(address) => format!("http://{address}"),
         None => host.to_string(),
     };
     let endpoint = Endpoint::from_shared(address)
         .map_err(|error| format!("invalid daemon address: {error}"))?
-        .connect_timeout(Duration::from_secs(5))
-        .timeout(Duration::from_secs(5));
+        .connect_timeout(Duration::from_secs(5));
+    let endpoint = match request_timeout {
+        Some(duration) => endpoint.timeout(duration),
+        None => endpoint,
+    };
     endpoint
         .connect()
         .await
@@ -102,4 +112,25 @@ pub async fn load_image(host: &str, file: &str, tag: &str) -> Result<(), String>
         ));
     }
     Ok(())
+}
+
+pub async fn pull_image(
+    host: &str,
+    name: &str,
+    show_progress: bool,
+) -> Result<tonic::Streaming<images_proto::PullImageResponse>, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    client
+        .pull_image(images_proto::PullImageRequest {
+            image: Some(images_proto::ImageSpec {
+                image: name.to_string(),
+                annotations: HashMap::new(),
+            }),
+            auth: None,
+            is_progress_visible: show_progress,
+        })
+        .await
+        .map(|response| response.into_inner())
+        .map_err(|error| format!("pull RPC failed: {error}"))
 }
