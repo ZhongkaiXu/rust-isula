@@ -2,7 +2,7 @@ use std::env;
 use std::process;
 
 use risula::cli::{self, Action};
-use risula::{grpc, images, load, pull, rmi};
+use risula::{grpc, images, import, load, pull, rmi};
 
 #[tokio::main]
 async fn main() {
@@ -38,6 +38,12 @@ async fn main() {
         Ok(Action::Invoke(command)) if command.name == "images" => {
             if let Err(error) = images::run(&command).await {
                 eprintln!("risula images: {error}");
+                process::exit(1);
+            }
+        }
+        Ok(Action::Invoke(command)) if command.name == "import" => {
+            if let Err(error) = import::run(&command).await {
+                eprintln!("risula import: {error}");
                 process::exit(1);
             }
         }

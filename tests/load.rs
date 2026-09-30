@@ -2,8 +2,9 @@ use std::fs;
 use std::process::{Command, Output};
 
 use risula::grpc::images_proto::{
-    self, DeleteImageRequest, DeleteImageResponse, ListImagesRequest, ListImagesResponse,
-    LoadImageRequest, LoadImageResponse, PullImageRequest, PullImageResponse,
+    self, DeleteImageRequest, DeleteImageResponse, ImportRequest, ImportResponse,
+    ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse, PullImageRequest,
+    PullImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -38,6 +39,13 @@ impl images_proto::images_service_server::ImagesService for FakeLoad {
             return Err(Status::invalid_argument("wrong load request"));
         }
         Ok(Response::new(self.reply.clone()))
+    }
+
+    async fn import(
+        &self,
+        _request: Request<ImportRequest>,
+    ) -> Result<Response<ImportResponse>, Status> {
+        Err(Status::unimplemented("import"))
     }
 
     type PullImageStream =

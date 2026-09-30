@@ -2,8 +2,9 @@ use std::collections::HashMap;
 use std::process::{Command, Output};
 
 use risula::grpc::images_proto::{
-    self, DeleteImageRequest, DeleteImageResponse, Descriptor, Image, ListImagesRequest,
-    ListImagesResponse, LoadImageRequest, LoadImageResponse, PullImageRequest, PullImageResponse,
+    self, DeleteImageRequest, DeleteImageResponse, Descriptor, Image, ImportRequest,
+    ImportResponse, ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse,
+    PullImageRequest, PullImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -38,6 +39,13 @@ impl images_proto::images_service_server::ImagesService for FakeImages {
         _request: Request<LoadImageRequest>,
     ) -> Result<Response<LoadImageResponse>, Status> {
         Err(Status::unimplemented("load"))
+    }
+
+    async fn import(
+        &self,
+        _request: Request<ImportRequest>,
+    ) -> Result<Response<ImportResponse>, Status> {
+        Err(Status::unimplemented("import"))
     }
 
     type PullImageStream =

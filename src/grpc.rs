@@ -114,6 +114,27 @@ pub async fn load_image(host: &str, file: &str, tag: &str) -> Result<(), String>
     Ok(())
 }
 
+pub async fn import_image(host: &str, file: &str, tag: &str) -> Result<String, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = images_proto::images_service_client::ImagesServiceClient::new(channel);
+    let response = client
+        .import(images_proto::ImportRequest {
+            file: file.to_string(),
+            tag: tag.to_string(),
+        })
+        .await
+        .map_err(|error| format!("import RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response.id)
+}
+
 pub async fn pull_image(
     host: &str,
     name: &str,

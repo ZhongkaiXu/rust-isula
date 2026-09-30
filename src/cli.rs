@@ -377,6 +377,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "import" if args.len() != 2 || args.iter().any(String::is_empty) => {
+            Err("import requires a file and an image name".to_string())
+        }
         "pull" if args.len() != 1 || args[0].is_empty() => {
             Err("pull requires one image name".to_string())
         }
@@ -599,6 +602,20 @@ mod tests {
 
     #[test]
     fn validates_image_arguments() {
+        assert_eq!(parse(&words("import"), None).unwrap_err().exit_code, 1);
+        assert_eq!(
+            parse(&words("import image.tar"), None)
+                .unwrap_err()
+                .exit_code,
+            1
+        );
+        assert_eq!(
+            parse(&words("import a.tar image extra"), None)
+                .unwrap_err()
+                .exit_code,
+            1
+        );
+        assert!(parse(&words("import image.tar example:test"), None).is_ok());
         assert_eq!(parse(&words("pull"), None).unwrap_err().exit_code, 1);
         assert_eq!(parse(&words("load"), None).unwrap_err().exit_code, 1);
         assert_eq!(parse(&words("rmi"), None).unwrap_err().exit_code, 1);
