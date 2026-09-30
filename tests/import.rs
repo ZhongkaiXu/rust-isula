@@ -4,8 +4,8 @@ use std::time::Duration;
 
 use risula::grpc::images_proto::{
     self, DeleteImageRequest, DeleteImageResponse, ImportRequest, ImportResponse,
-    ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse, PullImageRequest,
-    PullImageResponse, TagImageRequest, TagImageResponse,
+    ListImagesRequest, ListImagesResponse, LoadImageRequest, LoadImageResponse, LoginRequest,
+    LoginResponse, PullImageRequest, PullImageResponse, TagImageRequest, TagImageResponse,
 };
 use tokio::net::UnixListener;
 use tokio_stream::wrappers::UnixListenerStream;
@@ -58,6 +58,13 @@ impl images_proto::images_service_server::ImagesService for FakeImport {
             return Err(Status::unavailable("image service unavailable"));
         }
         Ok(Response::new(self.reply.clone()))
+    }
+
+    async fn login(
+        &self,
+        _request: Request<LoginRequest>,
+    ) -> Result<Response<LoginResponse>, Status> {
+        Err(Status::unimplemented("login"))
     }
 
     type PullImageStream =

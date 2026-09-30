@@ -769,6 +769,7 @@ name = "risula"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "libc",
  "prost",
  "prost-types",
  "protoc-bin-vendored",

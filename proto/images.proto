@@ -10,6 +10,7 @@ service ImagesService {
     rpc Tag(TagImageRequest) returns (TagImageResponse);
     rpc Load(LoadImageRequest) returns (LoadImageResponse);
     rpc Import(ImportRequest) returns (ImportResponse);
+    rpc Login(LoginRequest) returns (LoginResponse);
     rpc PullImage(PullImageRequest) returns (stream PullImageResponse);
 }
 
@@ -64,6 +65,18 @@ message ImportResponse {
     string id = 1;
     uint32 cc = 2;
     string errmsg = 3;
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+    string server = 3;
+    string type = 4;
+}
+
+message LoginResponse {
+    uint32 cc = 1;
+    string errmsg = 2;
 }
 
 message ImageSpec {

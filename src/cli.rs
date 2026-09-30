@@ -279,6 +279,12 @@ const LOAD_OPTIONS: &[OptionSpec] = &[
     value("tag", None, "Image name and optional tag"),
 ];
 
+const LOGIN_OPTIONS: &[OptionSpec] = &[
+    value("username", Some('u'), "Username"),
+    value("password", Some('p'), "Password"),
+    flag("password-stdin", None, "Take the password from stdin"),
+];
+
 const IMAGES_OPTIONS: &[OptionSpec] = &[
     value("filter", Some('f'), "Filter output by condition"),
     flag("quiet", Some('q'), "Only display image names"),
@@ -299,6 +305,7 @@ const PS_OPTIONS: &[OptionSpec] = &[
 fn options_for(command: &str) -> &'static [OptionSpec] {
     match command {
         "load" => LOAD_OPTIONS,
+        "login" => LOGIN_OPTIONS,
         "images" => IMAGES_OPTIONS,
         "rmi" => RMI_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -377,6 +384,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "login" if args.len() != 1 || args[0].is_empty() => {
+            Err("login requires one registry server".to_string())
+        }
         "tag" if args.len() != 2 || args.iter().any(String::is_empty) => {
             Err("tag requires a source and target image".to_string())
         }
@@ -605,6 +615,12 @@ mod tests {
 
     #[test]
     fn validates_image_arguments() {
+        assert_eq!(parse(&words("login"), None).unwrap_err().exit_code, 1);
+        assert_eq!(
+            parse(&words("login one two"), None).unwrap_err().exit_code,
+            1
+        );
+        assert!(parse(&words("login -u user --password-stdin registry.test"), None).is_ok());
         assert_eq!(parse(&words("tag"), None).unwrap_err().exit_code, 1);
         assert_eq!(parse(&words("tag source"), None).unwrap_err().exit_code, 1);
         assert_eq!(
