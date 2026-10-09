@@ -299,3 +299,31 @@ pub async fn stop_container(
     }
     Ok(response)
 }
+
+pub async fn remove_container(
+    host: &str,
+    name: &str,
+    force: bool,
+    volumes: bool,
+) -> Result<proto::DeleteResponse, String> {
+    // Forced removal and volume cleanup can take longer than five seconds.
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = proto::container_service_client::ContainerServiceClient::new(channel);
+    let response = client
+        .delete(proto::DeleteRequest {
+            id: name.to_string(),
+            force,
+            volumes,
+        })
+        .await
+        .map_err(|error| format!("rm RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response)
+}

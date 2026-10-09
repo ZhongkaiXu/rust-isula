@@ -292,6 +292,19 @@ const IMAGES_OPTIONS: &[OptionSpec] = &[
 
 const RMI_OPTIONS: &[OptionSpec] = &[flag("force", Some('f'), "Force removal of the image")];
 
+const RM_OPTIONS: &[OptionSpec] = &[
+    flag(
+        "force",
+        Some('f'),
+        "Force the removal of a running container (uses SIGKILL)",
+    ),
+    flag(
+        "volumes",
+        Some('v'),
+        "Remove anonymous volumes associated with the container",
+    ),
+];
+
 const STOP_OPTIONS: &[OptionSpec] = &[
     flag("force", Some('f'), "Stop by force killing"),
     value(
@@ -324,6 +337,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "login" => LOGIN_OPTIONS,
         "images" => IMAGES_OPTIONS,
         "rmi" => RMI_OPTIONS,
+        "rm" => RM_OPTIONS,
         "stop" => STOP_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -333,6 +347,21 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
 
 fn find_command(name: &str) -> Option<&'static CommandSpec> {
     COMMANDS.iter().find(|command| command.name == name)
+}
+
+fn accepts_bool_value(command: &str, option: &str) -> bool {
+    matches!(
+        (command, option),
+        ("stop" | "rm", "force") | ("rm", "volumes")
+    )
+}
+
+pub(crate) fn parse_bool(value: Option<&str>, name: &str) -> Result<bool, String> {
+    match value.unwrap_or("true") {
+        "1" | "t" | "T" | "true" | "TRUE" | "True" => Ok(true),
+        "0" | "f" | "F" | "false" | "FALSE" | "False" => Ok(false),
+        value => Err(format!("invalid boolean value '{value}' for --{name}")),
+    }
 }
 
 fn find_long_option(command: &str, name: &str) -> Option<OptionSpec> {
@@ -426,6 +455,8 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         }
         "rmi" if args.is_empty() => Err("rmi requires at least one image name".to_string()),
         "rmi" if args.len() >= 1000 => Err("too many images to remove".to_string()),
+        "rm" if args.is_empty() => Err("rm requires at least one container name".to_string()),
+        "rm" if args.len() >= 1000 => Err("too many containers to remove".to_string()),
         "stop" if args.is_empty() => Err("stop requires at least one container name".to_string()),
         "stop" if args.len() >= 1000 => Err("too many containers to stop".to_string()),
         "ps" | "version" | "info" | "network ls" | "volume ls" | "volume prune"
@@ -492,7 +523,8 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                 .ok_or_else(|| format!("unknown option: --{name}"))?;
             let value = if spec.takes_value {
                 Some(option_value(args, &mut index, inline, name)?)
-            } else if command.name == "stop" && spec.long == "force" {
+            } else if accepts_bool_value(command.name, spec.long) {
+                parse_bool(inline, spec.long)?;
                 inline.map(str::to_string)
             } else if inline.is_some() {
                 return Err(CliError::option(format!(
@@ -507,8 +539,9 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
             while let Some(letter) = letters.next() {
                 let spec = find_short_option(command.name, letter)
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
-                if command.name == "stop" && spec.long == "force" {
+                if accepts_bool_value(command.name, spec.long) {
                     if let Some(value) = letters.as_str().strip_prefix('=') {
+                        parse_bool(Some(value), spec.long)?;
                         save_option(&mut host, &mut options, spec, Some(value.to_string()));
                         break;
                     }

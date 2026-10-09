@@ -35,11 +35,7 @@ pub async fn run(command: &Invocation) -> Result<bool, String> {
         match option.name {
             "time" => timeout = parse_time(option.value.as_deref().unwrap_or(""))?,
             "force" => {
-                force = match option.value.as_deref().unwrap_or("true") {
-                    "1" | "t" | "T" | "true" | "TRUE" | "True" => true,
-                    "0" | "f" | "F" | "false" | "FALSE" | "False" => false,
-                    value => return Err(format!("invalid boolean value '{value}' for --force")),
-                };
+                force = crate::cli::parse_bool(option.value.as_deref(), "force")?;
             }
             _ => {}
         }

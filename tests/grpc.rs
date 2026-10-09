@@ -11,6 +11,13 @@ struct FakeDaemon {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeDaemon {
+    async fn delete(
+        &self,
+        _request: Request<proto::DeleteRequest>,
+    ) -> Result<Response<proto::DeleteResponse>, Status> {
+        Err(Status::unimplemented("delete"))
+    }
+
     async fn stop(
         &self,
         _request: Request<proto::StopRequest>,
