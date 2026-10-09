@@ -292,6 +292,15 @@ const IMAGES_OPTIONS: &[OptionSpec] = &[
 
 const RMI_OPTIONS: &[OptionSpec] = &[flag("force", Some('f'), "Force removal of the image")];
 
+const STOP_OPTIONS: &[OptionSpec] = &[
+    flag("force", Some('f'), "Stop by force killing"),
+    value(
+        "time",
+        Some('t'),
+        "Seconds to wait for stop before killing it (default 10)",
+    ),
+];
+
 const SEARCH_OPTIONS: &[OptionSpec] = &[
     value("limit", None, "Maximum number of results (default 25)"),
     value("filter", Some('f'), "Filter results by condition"),
@@ -315,6 +324,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "login" => LOGIN_OPTIONS,
         "images" => IMAGES_OPTIONS,
         "rmi" => RMI_OPTIONS,
+        "stop" => STOP_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
         _ => &[],
@@ -416,6 +426,8 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         }
         "rmi" if args.is_empty() => Err("rmi requires at least one image name".to_string()),
         "rmi" if args.len() >= 1000 => Err("too many images to remove".to_string()),
+        "stop" if args.is_empty() => Err("stop requires at least one container name".to_string()),
+        "stop" if args.len() >= 1000 => Err("too many containers to stop".to_string()),
         "ps" | "version" | "info" | "network ls" | "volume ls" | "volume prune"
             if !args.is_empty() =>
         {
@@ -480,6 +492,8 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                 .ok_or_else(|| format!("unknown option: --{name}"))?;
             let value = if spec.takes_value {
                 Some(option_value(args, &mut index, inline, name)?)
+            } else if command.name == "stop" && spec.long == "force" {
+                inline.map(str::to_string)
             } else if inline.is_some() {
                 return Err(CliError::option(format!(
                     "option --{name} does not take a value"
@@ -493,14 +507,22 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
             while let Some(letter) = letters.next() {
                 let spec = find_short_option(command.name, letter)
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
+                if command.name == "stop" && spec.long == "force" {
+                    if let Some(value) = letters.as_str().strip_prefix('=') {
+                        save_option(&mut host, &mut options, spec, Some(value.to_string()));
+                        break;
+                    }
+                }
                 let value = if spec.takes_value {
-                    let rest = letters.as_str().trim_start_matches('=');
-                    Some(option_value(
-                        args,
-                        &mut index,
-                        if rest.is_empty() { None } else { Some(rest) },
-                        spec.long,
-                    )?)
+                    let rest = letters.as_str();
+                    let inline = if let Some(value) = rest.strip_prefix('=') {
+                        Some(value)
+                    } else if rest.is_empty() {
+                        None
+                    } else {
+                        Some(rest)
+                    };
+                    Some(option_value(args, &mut index, inline, spec.long)?)
                 } else {
                     None
                 };
@@ -514,7 +536,13 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
     }
 
     check_host(&host)?;
-    check_args(command.name, &options, &positionals).map_err(CliError::command)?;
+    check_args(command.name, &options, &positionals).map_err(|message| {
+        if command.name == "stop" {
+            CliError::option(message)
+        } else {
+            CliError::command(message)
+        }
+    })?;
 
     Ok(Action::Invoke(Invocation {
         name: command.name,

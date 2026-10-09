@@ -119,7 +119,7 @@ async fn run_logout(reply: LogoutResponse, fail: bool) -> (Output, Vec<LogoutReq
     (output, seen)
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn logout_sends_server_and_oci_type() {
     let (output, calls) = run_logout(LogoutResponse::default(), false).await;
     assert!(output.status.success());
@@ -137,7 +137,7 @@ async fn logout_sends_server_and_oci_type() {
     );
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn logout_reports_daemon_error() {
     let reply = LogoutResponse {
         cc: 42,
@@ -153,7 +153,7 @@ async fn logout_reports_daemon_error() {
     assert!(!stderr.contains("Logout Succeeded"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn logout_reports_grpc_error() {
     let (output, calls) = run_logout(LogoutResponse::default(), true).await;
     assert!(!output.status.success());

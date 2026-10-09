@@ -128,7 +128,7 @@ async fn run_pull(replies: Vec<PullImageResponse>, fail: bool, delay: Duration) 
     output
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn pull_reads_all_frames_and_reports_final_ref() {
     let replies = vec![
         PullImageResponse {
@@ -149,7 +149,7 @@ async fn pull_reads_all_frames_and_reports_final_ref() {
     );
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn pull_reports_stream_error() {
     let reply = PullImageResponse {
         image_ref: "example:test".into(),
@@ -162,7 +162,7 @@ async fn pull_reports_stream_error() {
     assert!(!stderr.contains("pulled"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn pull_rejects_stream_without_image_ref() {
     let output = run_pull(vec![PullImageResponse::default()], false, Duration::ZERO).await;
     assert!(!output.status.success());
@@ -171,7 +171,7 @@ async fn pull_rejects_stream_without_image_ref() {
         .contains("without an image reference"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn pull_can_run_longer_than_short_rpc_timeout() {
     let reply = PullImageResponse {
         image_ref: "example:test".into(),

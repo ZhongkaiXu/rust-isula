@@ -142,7 +142,7 @@ fn sample_images() -> ListImagesResponse {
     }
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn images_displays_sorted_table() {
     let output = run_images(sample_images(), HashMap::new(), &[]).await;
     assert!(output.status.success());
@@ -157,7 +157,7 @@ async fn images_displays_sorted_table() {
     assert!(lines[2].contains("1.000MB"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn images_passes_filter_and_prints_quiet_ids() {
     let filters = HashMap::from([("reference".to_string(), "*busybox*".to_string())]);
     let output = run_images(
@@ -173,7 +173,7 @@ async fn images_passes_filter_and_prints_quiet_ids() {
     );
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn images_reports_daemon_error() {
     let reply = ListImagesResponse {
         cc: 42,
@@ -187,7 +187,7 @@ async fn images_reports_daemon_error() {
     assert!(stderr.contains("image service unavailable"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn images_rejects_malformed_filter() {
     let output = run_images(sample_images(), HashMap::new(), &["-f", "broken"]).await;
     assert!(!output.status.success());
@@ -196,7 +196,7 @@ async fn images_rejects_malformed_filter() {
         .contains("expected name=value"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn images_handles_missing_image_metadata() {
     let reply = ListImagesResponse {
         images: vec![Image::default()],

@@ -130,7 +130,7 @@ async fn run_import(
     (output, seen, path)
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn import_sends_absolute_path_and_tag_and_prints_id() {
     let reply = ImportResponse {
         id: "abc123".into(),
@@ -149,7 +149,7 @@ async fn import_sends_absolute_path_and_tag_and_prints_id() {
     assert!(output.stderr.is_empty());
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn import_reports_daemon_error() {
     let reply = ImportResponse {
         cc: 42,
@@ -165,7 +165,7 @@ async fn import_reports_daemon_error() {
     assert!(stderr.contains("invalid archive"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn import_reports_grpc_error() {
     let (output, calls, _) = run_import(
         "example:test",
@@ -181,7 +181,7 @@ async fn import_reports_grpc_error() {
         .contains("image service unavailable"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn import_rejects_digest_as_tag_before_connecting() {
     let tag = format!("sha256:{}", "a".repeat(64));
     let (output, calls, _) =
@@ -193,7 +193,7 @@ async fn import_rejects_digest_as_tag_before_connecting() {
         .contains("not a valid image name"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn import_can_run_longer_than_short_rpc_timeout() {
     let (output, calls, _) = run_import(
         "example:test",

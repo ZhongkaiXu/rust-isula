@@ -126,7 +126,7 @@ async fn run_load(tag: Option<&str>, reply: LoadImageResponse) -> Output {
     output
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn load_sends_absolute_path_type_and_tag() {
     let output = run_load(Some("example:test"), LoadImageResponse::default()).await;
     assert!(output.status.success());
@@ -135,13 +135,13 @@ async fn load_sends_absolute_path_type_and_tag() {
     assert!(stdout.ends_with("/image.tar\" success\n"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn load_omits_tag_when_unspecified() {
     let output = run_load(None, LoadImageResponse::default()).await;
     assert!(output.status.success());
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn load_reports_daemon_error() {
     let reply = LoadImageResponse {
         cc: 42,

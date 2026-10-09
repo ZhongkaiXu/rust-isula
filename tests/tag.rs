@@ -123,7 +123,7 @@ async fn run_tag(
     (output, seen)
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn tag_sends_source_and_destination_without_output() {
     let (output, calls) = run_tag("target:new", TagImageResponse::default(), false).await;
     assert!(output.status.success());
@@ -138,7 +138,7 @@ async fn tag_sends_source_and_destination_without_output() {
     assert!(output.stderr.is_empty());
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn tag_reports_daemon_error() {
     let reply = TagImageResponse {
         cc: 42,
@@ -153,7 +153,7 @@ async fn tag_reports_daemon_error() {
     assert!(stderr.contains("source image not found"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn tag_reports_grpc_error() {
     let (output, calls) = run_tag("target:new", TagImageResponse::default(), true).await;
     assert!(!output.status.success());
@@ -163,7 +163,7 @@ async fn tag_reports_grpc_error() {
         .contains("image service unavailable"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn tag_rejects_digest_destination_before_connecting() {
     let destination = format!("sha256:{}", "a".repeat(64));
     let (output, calls) = run_tag(&destination, TagImageResponse::default(), false).await;

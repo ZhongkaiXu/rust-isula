@@ -127,7 +127,7 @@ async fn run_rmi(args: &[&str]) -> (Output, Vec<DeleteImageRequest>) {
     (output, seen)
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn rmi_sends_force_and_removes_multiple_images() {
     let (output, calls) = run_rmi(&["-f", "first:tag", "second:tag"]).await;
     assert!(output.status.success());
@@ -151,7 +151,7 @@ async fn rmi_sends_force_and_removes_multiple_images() {
     assert!(output.stderr.is_empty());
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn rmi_continues_after_server_error_and_reserved_name() {
     let (output, calls) = run_rmi(&["missing", "none", "good:tag"]).await;
     assert!(!output.status.success());
@@ -168,7 +168,7 @@ async fn rmi_continues_after_server_error_and_reserved_name() {
     assert!(stderr.contains("reserved image name"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn rmi_continues_after_grpc_error() {
     let (output, calls) = run_rmi(&["unavailable", "good:tag"]).await;
     assert!(!output.status.success());
@@ -182,7 +182,7 @@ async fn rmi_continues_after_grpc_error() {
     );
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn rmi_can_take_longer_than_short_rpc_timeout() {
     let (output, calls) = run_rmi(&["slow"]).await;
     assert!(output.status.success());

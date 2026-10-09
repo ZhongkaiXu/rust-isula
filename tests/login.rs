@@ -136,7 +136,7 @@ async fn run_login(
     (output, seen)
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_reads_password_stdin_and_sends_oci_request() {
     let (output, calls) = run_login(
         &["-u", "alice", "--password-stdin", "registry.test"],
@@ -162,7 +162,7 @@ async fn login_reads_password_stdin_and_sends_oci_request() {
     );
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_password_option_warns_without_printing_password() {
     let (output, calls) = run_login(
         &["-u", "alice", "-p", "test-secret", "registry.test"],
@@ -178,7 +178,7 @@ async fn login_password_option_warns_without_printing_password() {
     assert!(!stdout.contains("test-secret"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_rejects_conflicting_password_options_before_rpc() {
     let (output, calls) = run_login(
         &[
@@ -201,7 +201,7 @@ async fn login_rejects_conflicting_password_options_before_rpc() {
         .contains("mutually exclusive"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_requires_username_with_password_stdin() {
     let (output, calls) = run_login(
         &["--password-stdin", "registry.test"],
@@ -217,7 +217,7 @@ async fn login_requires_username_with_password_stdin() {
         .contains("requires --username"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_without_password_cannot_prompt_on_pipe() {
     let (output, calls) = run_login(
         &["-u", "alice", "registry.test"],
@@ -233,7 +233,7 @@ async fn login_without_password_cannot_prompt_on_pipe() {
         .contains("non TTY"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_rejects_empty_password_stdin() {
     let (output, calls) = run_login(
         &["-u", "alice", "--password-stdin", "registry.test"],
@@ -249,7 +249,7 @@ async fn login_rejects_empty_password_stdin() {
         .contains("password must be"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_rejects_plain_tcp_before_sending_credentials() {
     let (output, calls) = run_login(
         &[
@@ -272,7 +272,7 @@ async fn login_rejects_plain_tcp_before_sending_credentials() {
         .contains("TCP credentials are not encrypted"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_reports_daemon_error() {
     let (output, calls) = run_login(
         &["-u", "alice", "--password-stdin", "registry.test"],
@@ -292,7 +292,7 @@ async fn login_reports_daemon_error() {
     assert!(!stderr.contains("test-secret"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn login_reports_grpc_error() {
     let (output, calls) = run_login(
         &["-u", "alice", "--password-stdin", "registry.test"],

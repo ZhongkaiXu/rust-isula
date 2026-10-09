@@ -271,3 +271,31 @@ pub async fn delete_image(host: &str, name: &str, force: bool) -> Result<(), Str
     }
     Ok(())
 }
+
+pub async fn stop_container(
+    host: &str,
+    name: &str,
+    force: bool,
+    timeout: i32,
+) -> Result<proto::StopResponse, String> {
+    // The daemon owns the stop timeout, which can exceed five seconds or be infinite.
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = proto::container_service_client::ContainerServiceClient::new(channel);
+    let response = client
+        .stop(proto::StopRequest {
+            id: name.to_string(),
+            force,
+            timeout,
+        })
+        .await
+        .map_err(|error| format!("stop RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response)
+}

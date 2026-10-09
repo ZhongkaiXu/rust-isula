@@ -151,7 +151,7 @@ fn sample_results() -> SearchResponse {
     }
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_sends_default_request_and_prints_sorted_table() {
     let (output, calls) = run_search(&["alpine"], sample_results(), false, Duration::ZERO).await;
     assert!(output.status.success());
@@ -172,7 +172,7 @@ async fn search_sends_default_request_and_prints_sorted_table() {
     assert!(!lines[2].contains(&"x".repeat(60)));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_passes_filters_limit_and_full_description() {
     let (output, calls) = run_search(
         &[
@@ -199,7 +199,7 @@ async fn search_passes_filters_limit_and_full_description() {
         .contains(&"x".repeat(60)));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_supports_custom_field_format_and_zero_limit_default() {
     let (output, calls) = run_search(
         &[
@@ -226,7 +226,7 @@ async fn search_supports_custom_field_format_and_zero_limit_default() {
     assert!(!lines[0].contains("DESCRIPTION"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_custom_format_without_table_has_no_header() {
     let (output, calls) = run_search(
         &["--format", "{{.Name}}:{{.IsOfficial}}", "alpine"],
@@ -246,7 +246,7 @@ async fn search_custom_format_without_table_has_no_header() {
     assert!(!stdout.contains("OFFICIAL"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_rejects_invalid_limit_before_rpc() {
     let (output, calls) = run_search(
         &["--limit", "101", "alpine"],
@@ -260,7 +260,7 @@ async fn search_rejects_invalid_limit_before_rpc() {
     assert!(String::from_utf8(output.stderr).unwrap().contains("limit"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_rejects_invalid_filter_and_format_before_rpc() {
     for args in [
         vec!["-f", "bad", "alpine"],
@@ -273,7 +273,7 @@ async fn search_rejects_invalid_filter_and_format_before_rpc() {
     }
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_reports_daemon_error() {
     let reply = SearchResponse {
         cc: 42,
@@ -289,7 +289,7 @@ async fn search_reports_daemon_error() {
     assert!(stderr.contains("registry search failed"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_reports_grpc_error() {
     let (output, calls) =
         run_search(&["alpine"], SearchResponse::default(), true, Duration::ZERO).await;
@@ -300,7 +300,7 @@ async fn search_reports_grpc_error() {
         .contains("registry unavailable"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn search_can_run_longer_than_short_rpc_timeout() {
     let (output, calls) = run_search(
         &["alpine"],

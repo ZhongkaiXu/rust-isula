@@ -11,6 +11,13 @@ struct FakeDaemon {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeDaemon {
+    async fn stop(
+        &self,
+        _request: Request<proto::StopRequest>,
+    ) -> Result<Response<proto::StopResponse>, Status> {
+        Err(Status::unimplemented("stop"))
+    }
+
     async fn version(
         &self,
         _request: Request<proto::VersionRequest>,
@@ -40,6 +47,42 @@ async fn start_fake_daemon(
             .unwrap();
     });
     (directory, format!("unix://{}", socket.display()), server)
+}
+
+#[tokio::test]
+async fn unix_rpc_client_does_not_start_worker_threads() {
+    let directory = tempfile::tempdir().unwrap();
+    let socket = directory.path().join("isulad.sock");
+    let listener = UnixListener::bind(&socket).unwrap();
+    let host = format!("unix://{}", socket.display());
+    let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_risula"))
+        .env("TOKIO_WORKER_THREADS", "8")
+        .args(["version", "-H", &host])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .unwrap();
+
+    // Hold the connection open without replying, so the CLI stays alive for inspection.
+    let connection =
+        tokio::time::timeout(std::time::Duration::from_secs(3), listener.accept()).await;
+    let status = std::fs::read_to_string(format!("/proc/{}/status", child.id()));
+    let killed = child.kill();
+    let reaped = child.wait();
+
+    killed.unwrap();
+    reaped.unwrap();
+    let _connection = connection.unwrap().unwrap();
+    let status = status.unwrap();
+    let threads = status
+        .lines()
+        .find_map(|line| line.strip_prefix("Threads:"))
+        .unwrap()
+        .trim();
+    assert_eq!(
+        threads, "1",
+        "RPC client unexpectedly created worker threads"
+    );
 }
 
 #[tokio::test]
@@ -82,7 +125,7 @@ async fn version_reports_server_error() {
     assert!(error.contains("daemon rejected request"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn version_command_reaches_selected_daemon() {
     let reply = proto::VersionResponse {
         version: "2.1.5".into(),
@@ -144,7 +187,7 @@ async fn info_reports_server_error() {
     assert!(error.contains("daemon rejected info"));
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn info_command_displays_server_fields() {
     let reply = proto::InfoResponse {
         containers_num: 2,

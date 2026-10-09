@@ -2,9 +2,13 @@ use std::env;
 use std::process;
 
 use risula::cli::{self, Action};
-use risula::{commands::images, grpc};
+use risula::{
+    commands::{containers, images},
+    grpc,
+};
 
-#[tokio::main]
+// The CLI waits for RPCs; it does not need one worker thread per CPU.
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let env_host = env::var("ISULAD_HOST").ok();
@@ -86,6 +90,16 @@ async fn main() {
         Ok(Action::Invoke(command)) if command.name == "rmi" => {
             if !images::rmi::run(&command).await {
                 process::exit(1);
+            }
+        }
+        Ok(Action::Invoke(command)) if command.name == "stop" => {
+            match containers::stop::run(&command).await {
+                Ok(true) => {}
+                Ok(false) => process::exit(1),
+                Err(error) => {
+                    eprintln!("risula stop: {error}");
+                    process::exit(125);
+                }
             }
         }
         Ok(Action::Invoke(command)) => {

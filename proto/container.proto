@@ -1,10 +1,11 @@
-// Version and Info RPC fields from iSulad v2.1.5 container.proto.
+// RPC fields from iSulad v2.1.5 container.proto.
 syntax = "proto3";
 package containers;
 
 service ContainerService {
     rpc Version(VersionRequest) returns (VersionResponse);
     rpc Info(InfoRequest) returns (InfoResponse);
+    rpc Stop(StopRequest) returns (StopResponse);
 }
 
 message VersionRequest {}
@@ -45,4 +46,16 @@ message InfoResponse {
     string no_proxy = 22;
     string driver_name = 23;
     string driver_status = 24;
+}
+
+message StopRequest {
+    string id = 1;
+    bool force = 2;
+    int32 timeout = 3;
+}
+
+message StopResponse {
+    string id = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
 }
