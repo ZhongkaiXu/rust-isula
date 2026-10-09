@@ -327,3 +327,25 @@ pub async fn remove_container(
     }
     Ok(response)
 }
+
+pub async fn kill_container(host: &str, name: &str, signal: u32) -> Result<(), String> {
+    // SIGKILL may wait for daemon cleanup; upstream has no request deadline.
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = proto::container_service_client::ContainerServiceClient::new(channel);
+    let response = client
+        .kill(proto::KillRequest {
+            id: name.to_string(),
+            signal,
+        })
+        .await
+        .map_err(|error| format!("kill RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}

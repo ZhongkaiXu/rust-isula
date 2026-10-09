@@ -305,6 +305,12 @@ const RM_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const KILL_OPTIONS: &[OptionSpec] = &[value(
+    "signal",
+    Some('s'),
+    "Signal to send to the container (default SIGKILL)",
+)];
+
 const STOP_OPTIONS: &[OptionSpec] = &[
     flag("force", Some('f'), "Stop by force killing"),
     value(
@@ -338,6 +344,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "images" => IMAGES_OPTIONS,
         "rmi" => RMI_OPTIONS,
         "rm" => RM_OPTIONS,
+        "kill" => KILL_OPTIONS,
         "stop" => STOP_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -385,9 +392,10 @@ fn option_value(
     index: &mut usize,
     inline: Option<&str>,
     name: &str,
-) -> Result<String, String> {
+    command: &str,
+) -> Result<String, CliError> {
     if let Some(value) = inline {
-        if !value.is_empty() {
+        if !value.is_empty() || command == "kill" {
             return Ok(value.to_string());
         }
     } else {
@@ -396,7 +404,12 @@ fn option_value(
             return Ok(value.clone());
         }
     }
-    Err(format!("option {name} requires a value"))
+    let message = format!("option {name} requires a value");
+    Err(if command == "kill" {
+        CliError::command(message)
+    } else {
+        CliError::option(message)
+    })
 }
 
 fn save_option(
@@ -522,7 +535,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
             let spec = find_long_option(command.name, name)
                 .ok_or_else(|| format!("unknown option: --{name}"))?;
             let value = if spec.takes_value {
-                Some(option_value(args, &mut index, inline, name)?)
+                Some(option_value(args, &mut index, inline, name, command.name)?)
             } else if accepts_bool_value(command.name, spec.long) {
                 parse_bool(inline, spec.long)?;
                 inline.map(str::to_string)
@@ -539,6 +552,17 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
             while let Some(letter) = letters.next() {
                 let spec = find_short_option(command.name, letter)
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
+                // Upstream kill string options accept -s=TERM or -s TERM.
+                // Without '=', remaining letters are parsed as more short options.
+                if command.name == "kill" && spec.takes_value {
+                    let inline = letters.as_str().strip_prefix('=');
+                    let value = option_value(args, &mut index, inline, spec.long, command.name)?;
+                    save_option(&mut host, &mut options, spec, Some(value));
+                    if inline.is_some() {
+                        break;
+                    }
+                    continue;
+                }
                 if accepts_bool_value(command.name, spec.long) {
                     if let Some(value) = letters.as_str().strip_prefix('=') {
                         parse_bool(Some(value), spec.long)?;
@@ -555,7 +579,13 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                     } else {
                         Some(rest)
                     };
-                    Some(option_value(args, &mut index, inline, spec.long)?)
+                    Some(option_value(
+                        args,
+                        &mut index,
+                        inline,
+                        spec.long,
+                        command.name,
+                    )?)
                 } else {
                     None
                 };
@@ -568,7 +598,13 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
         index += 1;
     }
 
-    check_host(&host)?;
+    check_host(&host).map_err(|message| {
+        if command.name == "kill" {
+            CliError::command(message)
+        } else {
+            CliError::option(message)
+        }
+    })?;
     check_args(command.name, &options, &positionals).map_err(|message| {
         if command.name == "stop" {
             CliError::option(message)

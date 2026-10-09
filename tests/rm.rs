@@ -13,6 +13,13 @@ struct FakeRemove {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeRemove {
+    async fn kill(
+        &self,
+        _request: Request<proto::KillRequest>,
+    ) -> Result<Response<proto::KillResponse>, Status> {
+        Err(Status::unimplemented("kill"))
+    }
+
     async fn version(
         &self,
         _request: Request<proto::VersionRequest>,

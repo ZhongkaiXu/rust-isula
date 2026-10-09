@@ -92,6 +92,16 @@ async fn main() {
                 process::exit(1);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "kill" => {
+            match containers::kill::run(&command).await {
+                Ok(true) => {}
+                Ok(false) => process::exit(1),
+                Err(error) => {
+                    eprintln!("risula kill: {}", error.message);
+                    process::exit(error.exit_code);
+                }
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "rm" => {
             match containers::rm::run(&command).await {
                 Ok(true) => {}
