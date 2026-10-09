@@ -12,6 +12,13 @@ struct FakeKill {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeKill {
+    async fn pause(
+        &self,
+        _request: Request<proto::PauseRequest>,
+    ) -> Result<Response<proto::PauseResponse>, Status> {
+        Err(Status::unimplemented("pause"))
+    }
+
     async fn stop(
         &self,
         _request: Request<proto::StopRequest>,

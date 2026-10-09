@@ -92,6 +92,11 @@ async fn main() {
                 process::exit(1);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "pause" => {
+            if !containers::pause::run(&command).await {
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "kill" => {
             match containers::kill::run(&command).await {
                 Ok(true) => {}

@@ -349,3 +349,24 @@ pub async fn kill_container(host: &str, name: &str, signal: u32) -> Result<(), S
     }
     Ok(())
 }
+
+pub async fn pause_container(host: &str, name: &str) -> Result<(), String> {
+    // Let the daemon finish freezing the container, without a short RPC deadline.
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = proto::container_service_client::ContainerServiceClient::new(channel);
+    let response = client
+        .pause(proto::PauseRequest {
+            id: name.to_string(),
+        })
+        .await
+        .map_err(|error| format!("pause RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}

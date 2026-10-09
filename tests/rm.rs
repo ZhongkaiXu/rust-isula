@@ -13,6 +13,13 @@ struct FakeRemove {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeRemove {
+    async fn pause(
+        &self,
+        _request: Request<proto::PauseRequest>,
+    ) -> Result<Response<proto::PauseResponse>, Status> {
+        Err(Status::unimplemented("pause"))
+    }
+
     async fn kill(
         &self,
         _request: Request<proto::KillRequest>,
