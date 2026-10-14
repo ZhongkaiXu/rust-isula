@@ -9,6 +9,7 @@ service ContainerService {
     rpc Delete(DeleteRequest) returns (DeleteResponse);
     rpc Kill(KillRequest) returns (KillResponse);
     rpc Pause(PauseRequest) returns (PauseResponse);
+    rpc Resume(ResumeRequest) returns (ResumeResponse);
 }
 
 message VersionRequest {}
@@ -92,6 +93,16 @@ message PauseRequest {
 }
 
 message PauseResponse {
+    string id = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message ResumeRequest {
+    string id = 1;
+}
+
+message ResumeResponse {
     string id = 1;
     uint32 cc = 2;
     string errmsg = 3;

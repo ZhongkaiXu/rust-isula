@@ -474,6 +474,10 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         "stop" if args.len() >= 1000 => Err("too many containers to stop".to_string()),
         "pause" if args.is_empty() => Err("pause requires at least one container name".to_string()),
         "pause" if args.len() >= 1000 => Err("too many containers to pause".to_string()),
+        "unpause" if args.is_empty() => {
+            Err("unpause requires at least one container name".to_string())
+        }
+        "unpause" if args.len() >= 1000 => Err("too many containers to unpause".to_string()),
         "ps" | "version" | "info" | "network ls" | "volume ls" | "volume prune"
             if !args.is_empty() =>
         {
@@ -608,7 +612,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
         }
     })?;
     check_args(command.name, &options, &positionals).map_err(|message| {
-        if matches!(command.name, "stop" | "pause") {
+        if matches!(command.name, "stop" | "pause" | "unpause") {
             CliError::option(message)
         } else {
             CliError::command(message)
