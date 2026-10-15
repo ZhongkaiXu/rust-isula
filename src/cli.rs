@@ -324,6 +324,8 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const START_OPTIONS: &[OptionSpec] = &[flag("attach", Some('a'), "Attach STDOUT/STDERR")];
+
 const SEARCH_OPTIONS: &[OptionSpec] = &[
     value("limit", None, "Maximum number of results (default 25)"),
     value("filter", Some('f'), "Filter results by condition"),
@@ -350,6 +352,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "rm" => RM_OPTIONS,
         "kill" => KILL_OPTIONS,
         "stop" => STOP_OPTIONS,
+        "start" => START_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
         _ => &[],
@@ -363,7 +366,7 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 fn accepts_bool_value(command: &str, option: &str) -> bool {
     matches!(
         (command, option),
-        ("stop" | "rm", "force") | ("rm", "volumes")
+        ("stop" | "rm", "force") | ("rm", "volumes") | ("start", "attach")
     )
 }
 
@@ -448,6 +451,19 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "start" if args.is_empty() || args.len() >= 1000 => {
+            Err("start requires between 1 and 999 containers".into())
+        }
+        "start" => {
+            let mut attach = false;
+            for option in options.iter().filter(|option| option.name == "attach") {
+                attach = parse_bool(option.value.as_deref(), "attach")?;
+            }
+            if attach && args.len() > 1 {
+                return Err("cannot start and attach multiple containers at once".into());
+            }
+            Ok(())
+        }
         "rename" if args.len() != 2 => {
             Err("rename requires an old name and a new name".to_string())
         }
@@ -619,7 +635,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
         }
     })?;
     check_args(command.name, &options, &positionals).map_err(|message| {
-        if matches!(command.name, "stop" | "pause" | "unpause") {
+        if matches!(command.name, "start" | "stop" | "pause" | "unpause") {
             CliError::option(message)
         } else {
             CliError::command(message)

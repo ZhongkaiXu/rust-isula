@@ -11,6 +11,10 @@ service ContainerService {
     rpc Pause(PauseRequest) returns (PauseResponse);
     rpc Resume(ResumeRequest) returns (ResumeResponse);
     rpc Rename(RenameRequest) returns (RenameResponse);
+    rpc Start(StartRequest) returns (StartResponse);
+    rpc RemoteStart(stream RemoteStartRequest) returns (stream RemoteStartResponse);
+    rpc Inspect(InspectContainerRequest) returns (InspectContainerResponse);
+    rpc Wait(WaitRequest) returns (WaitResponse);
 }
 
 message VersionRequest {}
@@ -117,5 +121,55 @@ message RenameRequest {
 message RenameResponse {
     string id = 1;
     uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message StartRequest {
+    string id = 1;
+    string stdin = 2;
+    bool attach_stdin = 3;
+    string stdout = 4;
+    bool attach_stdout = 5;
+    string stderr = 6;
+    bool attach_stderr = 7;
+}
+
+message StartResponse {
+    string id = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message RemoteStartRequest {
+    bytes stdin = 1;
+    bool finish = 2;
+}
+
+message RemoteStartResponse {
+    bytes stdout = 1;
+    bytes stderr = 2;
+    bool finish = 3;
+}
+
+message InspectContainerRequest {
+    string id = 1;
+    bool bformat = 2;
+    int32 timeout = 3;
+}
+
+message InspectContainerResponse {
+    string ContainerJSON = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message WaitRequest {
+    string id = 1;
+    uint32 condition = 2;
+}
+
+message WaitResponse {
+    uint32 cc = 1;
+    uint32 exit_code = 2;
     string errmsg = 3;
 }

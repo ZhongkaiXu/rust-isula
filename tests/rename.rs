@@ -12,6 +12,32 @@ struct FakeRename {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeRename {
+    async fn start(
+        &self,
+        _request: Request<proto::StartRequest>,
+    ) -> Result<Response<proto::StartResponse>, Status> {
+        Err(Status::unimplemented("start"))
+    }
+    async fn inspect(
+        &self,
+        _request: Request<proto::InspectContainerRequest>,
+    ) -> Result<Response<proto::InspectContainerResponse>, Status> {
+        Err(Status::unimplemented("inspect"))
+    }
+    async fn wait(
+        &self,
+        _request: Request<proto::WaitRequest>,
+    ) -> Result<Response<proto::WaitResponse>, Status> {
+        Err(Status::unimplemented("wait"))
+    }
+    type RemoteStartStream = tokio_stream::Empty<Result<proto::RemoteStartResponse, Status>>;
+    async fn remote_start(
+        &self,
+        _request: Request<tonic::Streaming<proto::RemoteStartRequest>>,
+    ) -> Result<Response<Self::RemoteStartStream>, Status> {
+        Err(Status::unimplemented("remote_start"))
+    }
+
     async fn resume(
         &self,
         _request: Request<proto::ResumeRequest>,

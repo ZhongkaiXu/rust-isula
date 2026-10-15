@@ -92,6 +92,9 @@ async fn main() {
                 process::exit(1);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "start" => {
+            process::exit(containers::start::run(&command).await);
+        }
         Ok(Action::Invoke(command)) if command.name == "rename" => {
             if let Err(error) = containers::rename::run(&command).await {
                 eprintln!("risula rename: {error}");

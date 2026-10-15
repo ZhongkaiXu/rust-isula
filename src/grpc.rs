@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::time::Duration;
 use tonic::transport::{Channel, Endpoint};
 
+pub mod start;
+
 pub mod proto {
     tonic::include_proto!("containers");
 }
