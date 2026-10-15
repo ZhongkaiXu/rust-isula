@@ -21,6 +21,13 @@ struct FakeStart(Arc<Mutex<Calls>>);
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeStart {
+    async fn restart(
+        &self,
+        _request: Request<proto::RestartRequest>,
+    ) -> Result<Response<proto::RestartResponse>, Status> {
+        Err(Status::unimplemented("restart"))
+    }
+
     async fn resume(
         &self,
         _request: Request<proto::ResumeRequest>,

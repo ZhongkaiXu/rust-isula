@@ -414,3 +414,24 @@ pub async fn rename_container(host: &str, old_name: &str, new_name: &str) -> Res
     }
     Ok(())
 }
+
+pub async fn restart_container(host: &str, name: &str, timeout: i32) -> Result<(), String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let mut client = proto::container_service_client::ContainerServiceClient::new(channel);
+    let response = client
+        .restart(proto::RestartRequest {
+            id: name.to_string(),
+            timeout,
+        })
+        .await
+        .map_err(|error| format!("restart RPC failed: {error}"))?
+        .into_inner();
+
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}

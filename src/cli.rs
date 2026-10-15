@@ -326,6 +326,12 @@ const STOP_OPTIONS: &[OptionSpec] = &[
 
 const START_OPTIONS: &[OptionSpec] = &[flag("attach", Some('a'), "Attach STDOUT/STDERR")];
 
+const RESTART_OPTIONS: &[OptionSpec] = &[value(
+    "time",
+    Some('t'),
+    "Seconds to wait for stop before killing it (default 10)",
+)];
+
 const SEARCH_OPTIONS: &[OptionSpec] = &[
     value("limit", None, "Maximum number of results (default 25)"),
     value("filter", Some('f'), "Filter results by condition"),
@@ -353,6 +359,7 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "kill" => KILL_OPTIONS,
         "stop" => STOP_OPTIONS,
         "start" => START_OPTIONS,
+        "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
         _ => &[],
@@ -451,6 +458,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "restart" if args.is_empty() || args.len() >= 1000 => {
+            Err("restart requires between 1 and 999 containers".into())
+        }
         "start" if args.is_empty() || args.len() >= 1000 => {
             Err("start requires between 1 and 999 containers".into())
         }
@@ -581,9 +591,9 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
             while let Some(letter) = letters.next() {
                 let spec = find_short_option(command.name, letter)
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
-                // Upstream kill string options accept -s=TERM or -s TERM.
+                // Upstream kill/restart options accept -s=TERM/-t=1 or a separate value.
                 // Without '=', remaining letters are parsed as more short options.
-                if command.name == "kill" && spec.takes_value {
+                if matches!(command.name, "kill" | "restart") && spec.takes_value {
                     let inline = letters.as_str().strip_prefix('=');
                     let value = option_value(args, &mut index, inline, spec.long, command.name)?;
                     save_option(&mut host, &mut options, spec, Some(value));
@@ -635,7 +645,10 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
         }
     })?;
     check_args(command.name, &options, &positionals).map_err(|message| {
-        if matches!(command.name, "start" | "stop" | "pause" | "unpause") {
+        if matches!(
+            command.name,
+            "start" | "stop" | "restart" | "pause" | "unpause"
+        ) {
             CliError::option(message)
         } else {
             CliError::command(message)

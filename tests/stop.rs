@@ -12,6 +12,13 @@ struct FakeStop {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeStop {
+    async fn restart(
+        &self,
+        _request: Request<proto::RestartRequest>,
+    ) -> Result<Response<proto::RestartResponse>, Status> {
+        Err(Status::unimplemented("restart"))
+    }
+
     async fn start(
         &self,
         _request: Request<proto::StartRequest>,
