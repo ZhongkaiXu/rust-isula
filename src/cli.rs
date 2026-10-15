@@ -147,7 +147,11 @@ const COMMANDS: &[CommandSpec] = &[
         "Pull an image from a registry",
         "pull [OPTIONS] NAME[:TAG]",
     ),
-    command("rename", "Rename a container", "rename OLD_NAME NEW_NAME"),
+    command(
+        "rename",
+        "Rename a container",
+        "rename [OPTIONS] OLD_NAME NEW_NAME",
+    ),
     command(
         "restart",
         "Restart containers",
@@ -444,6 +448,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "rename" if args.len() != 2 => {
+            Err("rename requires an old name and a new name".to_string())
+        }
         "search" if args.len() != 1 || args[0].is_empty() => {
             Err("search requires one search term".to_string())
         }

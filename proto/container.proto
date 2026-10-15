@@ -10,6 +10,7 @@ service ContainerService {
     rpc Kill(KillRequest) returns (KillResponse);
     rpc Pause(PauseRequest) returns (PauseResponse);
     rpc Resume(ResumeRequest) returns (ResumeResponse);
+    rpc Rename(RenameRequest) returns (RenameResponse);
 }
 
 message VersionRequest {}
@@ -103,6 +104,17 @@ message ResumeRequest {
 }
 
 message ResumeResponse {
+    string id = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message RenameRequest {
+    string oldname = 1;
+    string newname = 2;
+}
+
+message RenameResponse {
     string id = 1;
     uint32 cc = 2;
     string errmsg = 3;

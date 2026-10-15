@@ -11,6 +11,13 @@ struct FakeDaemon {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeDaemon {
+    async fn rename(
+        &self,
+        _request: Request<proto::RenameRequest>,
+    ) -> Result<Response<proto::RenameResponse>, Status> {
+        Err(Status::unimplemented("rename"))
+    }
+
     async fn resume(
         &self,
         _request: Request<proto::ResumeRequest>,
