@@ -435,3 +435,16 @@ pub async fn restart_container(host: &str, name: &str, timeout: i32) -> Result<(
     }
     Ok(())
 }
+
+/// Creation can unpack an image; use the same unbounded RPC deadline as upstream.
+pub async fn create_container(
+    host: &str,
+    request: proto::CreateRequest,
+) -> Result<proto::CreateResponse, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    proto::container_service_client::ContainerServiceClient::new(channel)
+        .create(request)
+        .await
+        .map(|response| response.into_inner())
+        .map_err(|error| format!("create RPC failed: {error}"))
+}

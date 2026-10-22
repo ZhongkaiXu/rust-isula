@@ -92,6 +92,12 @@ async fn main() {
                 process::exit(1);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "create" => {
+            if let Err(error) = containers::create::run(&command).await {
+                eprintln!("risula create: {}", error.message);
+                process::exit(error.exit_code);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "start" => {
             process::exit(containers::start::run(&command).await);
         }

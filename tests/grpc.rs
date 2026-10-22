@@ -11,6 +11,13 @@ struct FakeDaemon {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeDaemon {
+    async fn create(
+        &self,
+        _request: Request<proto::CreateRequest>,
+    ) -> Result<Response<proto::CreateResponse>, Status> {
+        Err(Status::unimplemented("create"))
+    }
+
     async fn restart(
         &self,
         _request: Request<proto::RestartRequest>,

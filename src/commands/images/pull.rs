@@ -7,11 +7,14 @@ use crate::cli::Invocation;
 use crate::grpc;
 
 pub async fn run(command: &Invocation) -> Result<(), String> {
-    let name = &command.args[0];
+    pull(&command.host, &command.args[0]).await
+}
+
+pub async fn pull(host: &str, name: &str) -> Result<(), String> {
     let show_progress = io::stdout().is_terminal();
 
     eprintln!("Image \"{name}\" pulling");
-    let mut stream = grpc::pull_image(&command.host, name, show_progress).await?;
+    let mut stream = grpc::pull_image(host, name, show_progress).await?;
     let mut image_ref = None;
     let mut seen = HashMap::new();
 

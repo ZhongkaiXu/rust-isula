@@ -1,3 +1,5 @@
+mod create;
+
 pub const DEFAULT_HOST: &str = "unix:///var/run/isulad.sock";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -89,7 +91,7 @@ const COMMANDS: &[CommandSpec] = &[
     command(
         "create",
         "Create a new container",
-        "create [OPTIONS] IMAGE [COMMAND] [ARG...]",
+        "create [OPTIONS] --external-rootfs=PATH|IMAGE [COMMAND] [ARG...]",
     ),
     command(
         "events",
@@ -351,6 +353,7 @@ const PS_OPTIONS: &[OptionSpec] = &[
 
 fn options_for(command: &str) -> &'static [OptionSpec] {
     match command {
+        "create" => create::OPTIONS,
         "load" => LOAD_OPTIONS,
         "login" => LOGIN_OPTIONS,
         "images" => IMAGES_OPTIONS,
@@ -371,6 +374,13 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 }
 
 fn accepts_bool_value(command: &str, option: &str) -> bool {
+    if command == "create"
+        && create::OPTIONS
+            .iter()
+            .any(|spec| spec.long == option && !spec.takes_value)
+    {
+        return true;
+    }
     matches!(
         (command, option),
         ("stop" | "rm", "force") | ("rm", "volumes") | ("start", "attach")
@@ -409,7 +419,7 @@ fn option_value(
     command: &str,
 ) -> Result<String, CliError> {
     if let Some(value) = inline {
-        if !value.is_empty() || command == "kill" {
+        if !value.is_empty() || matches!(command, "kill" | "create") {
             return Ok(value.to_string());
         }
     } else {
@@ -458,6 +468,7 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "create" if args.is_empty() => Err("create requires an image or rootfs and command".into()),
         "restart" if args.is_empty() || args.len() >= 1000 => {
             Err("restart requires between 1 and 999 containers".into())
         }
@@ -593,7 +604,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
                 // Upstream kill/restart options accept -s=TERM/-t=1 or a separate value.
                 // Without '=', remaining letters are parsed as more short options.
-                if matches!(command.name, "kill" | "restart") && spec.takes_value {
+                if matches!(command.name, "kill" | "restart" | "create") && spec.takes_value {
                     let inline = letters.as_str().strip_prefix('=');
                     let value = option_value(args, &mut index, inline, spec.long, command.name)?;
                     save_option(&mut host, &mut options, spec, Some(value));
@@ -647,7 +658,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
     check_args(command.name, &options, &positionals).map_err(|message| {
         if matches!(
             command.name,
-            "start" | "stop" | "restart" | "pause" | "unpause"
+            "create" | "start" | "stop" | "restart" | "pause" | "unpause"
         ) {
             CliError::option(message)
         } else {
