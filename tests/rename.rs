@@ -12,6 +12,13 @@ struct FakeRename {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeRename {
+    async fn resize(
+        &self,
+        _: Request<proto::ResizeRequest>,
+    ) -> Result<Response<proto::ResizeResponse>, Status> {
+        Err(Status::unimplemented("resize"))
+    }
+
     async fn create(
         &self,
         _request: Request<proto::CreateRequest>,

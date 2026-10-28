@@ -98,6 +98,15 @@ async fn main() {
                 process::exit(error.exit_code);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "run" => {
+            match containers::run::run(&command).await {
+                Ok(code) => process::exit(code),
+                Err(error) => {
+                    eprintln!("risula run: {}", error.message);
+                    process::exit(error.exit_code);
+                }
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "start" => {
             process::exit(containers::start::run(&command).await);
         }

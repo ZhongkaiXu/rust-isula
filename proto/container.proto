@@ -16,6 +16,7 @@ service ContainerService {
     rpc Start(StartRequest) returns (StartResponse);
     rpc RemoteStart(stream RemoteStartRequest) returns (stream RemoteStartResponse);
     rpc Inspect(InspectContainerRequest) returns (InspectContainerResponse);
+    rpc Resize(ResizeRequest) returns (ResizeResponse);
     rpc Wait(WaitRequest) returns (WaitResponse);
 }
 
@@ -200,5 +201,18 @@ message WaitRequest {
 message WaitResponse {
     uint32 cc = 1;
     uint32 exit_code = 2;
+    string errmsg = 3;
+}
+
+message ResizeRequest {
+    string id = 1;
+    string suffix = 2;
+    uint32 height = 3;
+    uint32 width = 4;
+}
+
+message ResizeResponse {
+    string id = 1;
+    uint32 cc = 2;
     string errmsg = 3;
 }

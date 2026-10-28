@@ -72,7 +72,7 @@ fn env(value: &str) -> Result<Option<String>, String> {
     })
 }
 
-pub(super) fn build(command: &Invocation) -> Result<(CreateRequest, String), CliError> {
+pub(crate) fn build(command: &Invocation) -> Result<(CreateRequest, String), CliError> {
     let option_error = |e| error(e, 125);
     let pack_error = |e| error(e, 1);
     let mut host = json!({"RestartPolicy":{"Name":"no"}});
@@ -88,6 +88,7 @@ pub(super) fn build(command: &Invocation) -> Result<(CreateRequest, String), Cli
     if command.args.len() > 1 {
         container["Cmd"] = json!(command.args[1..]);
     }
+    let mut detach = false;
     let mut policy = "missing".to_string();
     let mut rootfs = None;
     let mut network = None;
@@ -118,6 +119,7 @@ pub(super) fn build(command: &Invocation) -> Result<(CreateRequest, String), Cli
         };
         match key {
             "debug" => {}
+            "detach" => detach = bool_value()?,
             "name" => request.id = v.into(),
             "runtime" => request.runtime = v.into(),
             "external-rootfs" => rootfs = Some(v.to_string()),
@@ -496,6 +498,12 @@ pub(super) fn build(command: &Invocation) -> Result<(CreateRequest, String), Cli
     }
     if !bindings.as_object().unwrap().is_empty() {
         host["PortBindings"] = bindings;
+    }
+    if command.name == "run" {
+        let attach_stdin = !detach && container["OpenStdin"] == true;
+        set_flag(&mut container, "AttachStdin", attach_stdin);
+        set_flag(&mut container, "AttachStdout", !detach);
+        set_flag(&mut container, "AttachStderr", !detach);
     }
     request.hostconfig = host.to_string();
     request.customconfig = container.to_string();

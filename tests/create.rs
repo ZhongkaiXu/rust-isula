@@ -11,6 +11,13 @@ struct FakeCreate {
 }
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeCreate {
+    async fn resize(
+        &self,
+        _: Request<proto::ResizeRequest>,
+    ) -> Result<Response<proto::ResizeResponse>, Status> {
+        Err(Status::unimplemented("resize"))
+    }
+
     async fn stop(
         &self,
         _request: Request<proto::StopRequest>,
@@ -22,7 +29,8 @@ impl proto::container_service_server::ContainerService for FakeCreate {
         &self,
         _request: Request<proto::StartRequest>,
     ) -> Result<Response<proto::StartResponse>, Status> {
-        Err(Status::unimplemented("start"))
+        self.calls.lock().unwrap().push("start".into());
+        Ok(Response::new(proto::StartResponse::default()))
     }
     async fn inspect(
         &self,
@@ -226,6 +234,14 @@ async fn run(
     args: &[&str],
     scenario: &'static str,
 ) -> (Output, Vec<String>, Vec<proto::CreateRequest>) {
+    run_command("create", args, scenario).await
+}
+
+async fn run_command(
+    command: &'static str,
+    args: &[&str],
+    scenario: &'static str,
+) -> (Output, Vec<String>, Vec<proto::CreateRequest>) {
     let dir = tempfile::tempdir().unwrap();
     let socket = dir.path().join("daemon.sock");
     let listener = tokio::net::UnixListener::bind(&socket).unwrap();
@@ -249,7 +265,7 @@ async fn run(
     let args: Vec<_> = args.iter().map(|s| s.to_string()).collect();
     let output = tokio::task::spawn_blocking(move || {
         Command::new(env!("CARGO_BIN_EXE_risula"))
-            .args(["create", "-H", &host])
+            .args([command, "-H", &host])
             .args(args)
             .output()
             .unwrap()
@@ -369,5 +385,44 @@ async fn help_lists_create_options() {
         "--external-rootfs",
     ] {
         assert!(help.contains(option));
+    }
+}
+
+#[tokio::test]
+async fn run_reuses_pull_policies_and_only_starts_after_creation() {
+    for (policy, scenario, expected, code) in [
+        ("missing", "ok", vec!["create", "start"], 0),
+        ("always", "ok", vec!["pull", "create", "start"], 0),
+        ("never", "missing", vec!["create"], 1),
+        (
+            "missing",
+            "missing",
+            vec!["create", "pull", "create", "start"],
+            0,
+        ),
+        (
+            "missing",
+            "still-missing",
+            vec!["create", "pull", "create"],
+            1,
+        ),
+        ("always", "pull-fails", vec!["pull"], 1),
+        ("missing", "pull-fails", vec!["create", "pull"], 1),
+    ] {
+        let (out, calls, _) = run_command(
+            "run",
+            &["-d", &format!("--pull={policy}"), "example:test"],
+            scenario,
+        )
+        .await;
+        assert_eq!(
+            out.status.code(),
+            Some(code),
+            "{policy} {scenario}: {out:?}"
+        );
+        assert_eq!(calls, expected);
+        if code == 0 {
+            assert!(out.stdout.ends_with(b"container-id\n"));
+        }
     }
 }

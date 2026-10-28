@@ -168,7 +168,7 @@ const COMMANDS: &[CommandSpec] = &[
     command(
         "run",
         "Run a command in a new container",
-        "run [OPTIONS] IMAGE [COMMAND] [ARG...]",
+        "run [OPTIONS] ROOTFS|IMAGE [COMMAND] [ARG...]",
     ),
     command(
         "search",
@@ -351,9 +351,9 @@ const PS_OPTIONS: &[OptionSpec] = &[
     flag("quiet", Some('q'), "Only display container IDs"),
 ];
 
-fn options_for(command: &str) -> &'static [OptionSpec] {
-    match command {
-        "create" => create::OPTIONS,
+fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
+    let options = match command {
+        "create" | "run" => create::OPTIONS,
         "load" => LOAD_OPTIONS,
         "login" => LOGIN_OPTIONS,
         "images" => IMAGES_OPTIONS,
@@ -366,7 +366,15 @@ fn options_for(command: &str) -> &'static [OptionSpec] {
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
         _ => &[],
-    }
+    };
+    const RUN_OPTIONS: &[OptionSpec] = &[flag(
+        "detach",
+        Some('d'),
+        "Run container in background and print container ID",
+    )];
+    options
+        .iter()
+        .chain(if command == "run" { RUN_OPTIONS } else { &[] })
 }
 
 fn find_command(name: &str) -> Option<&'static CommandSpec> {
@@ -374,10 +382,8 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 }
 
 fn accepts_bool_value(command: &str, option: &str) -> bool {
-    if command == "create"
-        && create::OPTIONS
-            .iter()
-            .any(|spec| spec.long == option && !spec.takes_value)
+    if matches!(command, "create" | "run")
+        && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
     }
@@ -419,7 +425,7 @@ fn option_value(
     command: &str,
 ) -> Result<String, CliError> {
     if let Some(value) = inline {
-        if !value.is_empty() || matches!(command, "kill" | "create") {
+        if !value.is_empty() || matches!(command, "kill" | "create" | "run") {
             return Ok(value.to_string());
         }
     } else {
@@ -468,7 +474,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
-        "create" if args.is_empty() => Err("create requires an image or rootfs and command".into()),
+        "create" | "run" if args.is_empty() => {
+            Err(format!("{command} requires an image or rootfs and command"))
+        }
         "restart" if args.is_empty() || args.len() >= 1000 => {
             Err("restart requires between 1 and 999 containers".into())
         }
@@ -604,7 +612,8 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
                 // Upstream kill/restart options accept -s=TERM/-t=1 or a separate value.
                 // Without '=', remaining letters are parsed as more short options.
-                if matches!(command.name, "kill" | "restart" | "create") && spec.takes_value {
+                if matches!(command.name, "kill" | "restart" | "create" | "run") && spec.takes_value
+                {
                     let inline = letters.as_str().strip_prefix('=');
                     let value = option_value(args, &mut index, inline, spec.long, command.name)?;
                     save_option(&mut host, &mut options, spec, Some(value));
@@ -658,7 +667,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
     check_args(command.name, &options, &positionals).map_err(|message| {
         if matches!(
             command.name,
-            "create" | "start" | "stop" | "restart" | "pause" | "unpause"
+            "create" | "run" | "start" | "stop" | "restart" | "pause" | "unpause"
         ) {
             CliError::option(message)
         } else {

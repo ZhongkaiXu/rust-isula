@@ -1,9 +1,11 @@
+pub(crate) mod console;
 pub mod create;
 pub mod kill;
 pub mod pause;
 pub mod rename;
 pub mod restart;
 pub mod rm;
+pub mod run;
 pub mod start;
 pub mod stop;
 pub mod unpause;

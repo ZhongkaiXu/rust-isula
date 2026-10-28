@@ -6,6 +6,7 @@ use std::path::Path;
 
 use tokio::io::unix::AsyncFd;
 
+use super::console::{self, Input};
 use crate::cli::{parse_bool, CliError, Invocation};
 use crate::grpc::{proto, start as rpc};
 
@@ -16,7 +17,7 @@ fn error(message: impl ToString, exit_code: i32) -> CliError {
     }
 }
 
-fn start_result(
+pub(super) fn start_result(
     result: Result<proto::StartResponse, tonic::Status>,
     remote: bool,
 ) -> Result<(), CliError> {
@@ -94,6 +95,16 @@ async fn local_attach(command: &Invocation, name: &str) -> Result<i32, CliError>
     let id = rpc::inspect_id(&command.host, name)
         .await
         .map_err(|err| error(err, 255))?;
+    local_start(&command.host, &id, None, false, false).await
+}
+
+pub(super) async fn local_start(
+    host: &str,
+    id: &str,
+    input: Option<Input>,
+    tty: bool,
+    auto_remove: bool,
+) -> Result<i32, CliError> {
     // FIFOs are shared with the local daemon, under a unique directory with mode 0700.
     let directory = tempfile::Builder::new()
         .prefix("risula-start-")
@@ -103,32 +114,65 @@ async fn local_attach(command: &Invocation, name: &str) -> Result<i32, CliError>
     let stderr = directory.path().join("err");
     let (out_reader, out_writer) = open_fifo(&stdout).map_err(|err| error(err, 1))?;
     let (err_reader, err_writer) = open_fifo(&stderr).map_err(|err| error(err, 1))?;
+    let stdin = directory.path().join("in");
+    let (in_reader, in_writer) = if input.is_some() {
+        let (reader, writer) = open_fifo(&stdin).map_err(|err| error(err, 1))?;
+        (
+            Some(reader),
+            Some(AsyncFd::new(writer).map_err(|err| error(err, 1))?),
+        )
+    } else {
+        (None, None)
+    };
+    let attach_stdin = input.is_some();
     let start_and_wait = async {
         start_result(
             rpc::start_container(
-                &command.host,
+                host,
                 proto::StartRequest {
-                    id: id.clone(),
+                    id: id.into(),
+                    stdin: if attach_stdin {
+                        stdin.to_string_lossy().into_owned()
+                    } else {
+                        String::new()
+                    },
+                    attach_stdin,
                     stdout: stdout.to_string_lossy().into_owned(),
                     stderr: stderr.to_string_lossy().into_owned(),
                     attach_stdout: true,
                     attach_stderr: true,
-                    ..Default::default()
                 },
             )
             .await,
             false,
         )?;
-        drop((out_writer, err_writer));
-        rpc::wait_container(&command.host, &id)
+        drop((out_writer, err_writer, in_reader));
+        rpc::wait_for(host, id, auto_remove)
             .await
             .map_err(|err| error(err, 125))
     };
-    let (exit_code, (), ()) = tokio::try_join!(
-        start_and_wait,
-        copy_output(out_reader, std::io::stdout()),
-        copy_output(err_reader, std::io::stderr()),
-    )?;
+    let output = async {
+        tokio::try_join!(
+            copy_output(out_reader, std::io::stdout()),
+            copy_output(err_reader, std::io::stderr()),
+        )
+        .map(|_| ())
+    };
+    let input_copy = async {
+        match (input, in_writer) {
+            (Some(input), Some(writer)) => console::copy_input(input, writer, tty)
+                .await
+                .map_err(|err| error(err, 1)),
+            _ => std::future::pending().await,
+        }
+    };
+    let io = async {
+        tokio::select! {
+            result = output => result,
+            result = input_copy => result,
+        }
+    };
+    let (exit_code, ()) = tokio::try_join!(start_and_wait, io)?;
     Ok(exit_code as i32)
 }
 
