@@ -39,6 +39,11 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "wait" => {
+            if !containers::wait::run(&command).await {
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "inspect" => {
             if let Err(error) = containers::inspect::run(&command).await {
                 eprintln!("risula inspect: {}", error.message);

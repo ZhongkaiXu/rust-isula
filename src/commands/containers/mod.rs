@@ -11,6 +11,7 @@ pub mod run;
 pub mod start;
 pub mod stop;
 pub mod unpause;
+pub mod wait;
 
 // Match the upstream strtol(base=0): signed decimal, octal or hexadecimal i32.
 pub(super) fn parse_time(value: &str) -> Result<i32, String> {
