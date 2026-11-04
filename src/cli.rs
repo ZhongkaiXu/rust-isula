@@ -350,6 +350,12 @@ const INSPECT_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const STATS_OPTIONS: &[OptionSpec] = &[
+    flag("all", Some('a'), "Show all containers"),
+    flag("no-stream", None, "Display one sample"),
+    flag("original", None, "Show original data"),
+];
+
 const PS_OPTIONS: &[OptionSpec] = &[
     flag("all", Some('a'), "Display all containers"),
     value("filter", Some('f'), "Filter output by condition"),
@@ -374,6 +380,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
+        "stats" => STATS_OPTIONS,
         "inspect" => INSPECT_OPTIONS,
         _ => &[],
     };
@@ -392,7 +399,7 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 }
 
 fn accepts_bool_value(command: &str, option: &str) -> bool {
-    if matches!(command, "create" | "run")
+    if matches!(command, "create" | "run" | "stats")
         && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;

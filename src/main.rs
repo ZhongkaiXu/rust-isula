@@ -39,6 +39,12 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "stats" => {
+            if let Err(error) = containers::stats::run(&command).await {
+                eprintln!("risula stats: {}", error.message);
+                process::exit(error.exit_code);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "top" => {
             if let Err(error) = containers::top::run(&command).await {
                 eprintln!("risula top: {error}");

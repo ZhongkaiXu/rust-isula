@@ -510,3 +510,19 @@ pub async fn inspect_object(
     }
     Ok(response.image_json)
 }
+
+pub async fn stats(
+    host: &str,
+    request: proto::StatsRequest,
+) -> Result<Vec<proto::ContainerInfo>, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let response = proto::container_service_client::ContainerServiceClient::new(channel)
+        .stats(request)
+        .await
+        .map_err(|error| format!("stats RPC failed: {error}"))?
+        .into_inner();
+    if response.cc != 0 {
+        return Err(response.errmsg);
+    }
+    Ok(response.containers)
+}

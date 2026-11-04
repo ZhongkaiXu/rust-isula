@@ -3,6 +3,7 @@ syntax = "proto3";
 package containers;
 
 service ContainerService {
+    rpc Stats(StatsRequest) returns (StatsResponse);
     rpc Top(TopRequest) returns (TopResponse);
     rpc List(ListRequest) returns (ListResponse);
     rpc Create(CreateRequest) returns (CreateResponse);
@@ -272,4 +273,41 @@ message TopResponse {
     repeated bytes processes = 2;
     uint32 cc = 3;
     string errmsg = 4;
+}
+
+message Container_info {
+	string id = 1;
+	uint64 pids_current = 2;
+	uint64 cpu_use_nanos = 3;
+	uint64 cpu_use_user = 4;
+	uint64 cpu_use_kernel = 5;
+	uint64 cpu_system_use = 6;
+	uint32 online_cpus = 7;
+	uint64 blkio_read = 8;
+	uint64 blkio_write = 9;
+	uint64 mem_used = 10;
+	uint64 mem_limit = 11;
+	uint64 kmem_used = 12;
+	uint64 kmem_limit = 13;
+	string name = 14;
+	string status = 15;
+	uint64 cache = 16;
+	uint64 cache_total = 17;
+	uint64 inactive_file_total = 18;
+	uint64 avaliable_bytes = 19;
+	uint64 workingset_bytes = 20;
+	uint64 rss_bytes = 21;
+	uint64 page_faults = 22;
+	uint64 major_page_faults = 23;
+}
+
+message StatsRequest {
+	repeated string containers = 2;
+	bool all = 3;
+}
+
+message StatsResponse {
+	repeated Container_info containers = 1;
+	uint32 cc = 2;
+	string errmsg = 3;
 }
