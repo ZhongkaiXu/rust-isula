@@ -18,6 +18,13 @@ struct FakeImages {
 
 #[tonic::async_trait]
 impl images_proto::images_service_server::ImagesService for FakeImages {
+    async fn inspect(
+        &self,
+        _: Request<images_proto::InspectImageRequest>,
+    ) -> Result<Response<images_proto::InspectImageResponse>, Status> {
+        Err(Status::unimplemented("inspect"))
+    }
+
     async fn list(
         &self,
         request: Request<ListImagesRequest>,

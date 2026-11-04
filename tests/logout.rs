@@ -19,6 +19,13 @@ struct FakeLogout {
 
 #[tonic::async_trait]
 impl images_proto::images_service_server::ImagesService for FakeLogout {
+    async fn inspect(
+        &self,
+        _: Request<images_proto::InspectImageRequest>,
+    ) -> Result<Response<images_proto::InspectImageResponse>, Status> {
+        Err(Status::unimplemented("inspect"))
+    }
+
     async fn list(
         &self,
         _request: Request<ListImagesRequest>,

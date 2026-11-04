@@ -114,7 +114,7 @@ const COMMANDS: &[CommandSpec] = &[
     command(
         "inspect",
         "Return information on a container or image",
-        "inspect [OPTIONS] CONTAINER|IMAGE",
+        "inspect [OPTIONS] CONTAINER|IMAGE [CONTAINER|IMAGE...]",
     ),
     command(
         "kill",
@@ -341,6 +341,15 @@ const SEARCH_OPTIONS: &[OptionSpec] = &[
     value("format", None, "Format output with field placeholders"),
 ];
 
+const INSPECT_OPTIONS: &[OptionSpec] = &[
+    value("format", Some('f'), "Format output using field paths"),
+    value(
+        "time",
+        Some('t'),
+        "Seconds to wait for inspect timeout (default 120)",
+    ),
+];
+
 const PS_OPTIONS: &[OptionSpec] = &[
     flag("all", Some('a'), "Display all containers"),
     value("filter", Some('f'), "Filter output by condition"),
@@ -365,6 +374,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
+        "inspect" => INSPECT_OPTIONS,
         _ => &[],
     };
     const RUN_OPTIONS: &[OptionSpec] = &[flag(

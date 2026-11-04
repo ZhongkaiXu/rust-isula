@@ -39,6 +39,12 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "inspect" => {
+            if let Err(error) = containers::inspect::run(&command).await {
+                eprintln!("risula inspect: {}", error.message);
+                process::exit(error.exit_code);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "ps" => {
             if let Err(error) = containers::ps::run(&command).await {
                 eprintln!("risula ps: {error}");

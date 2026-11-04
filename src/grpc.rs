@@ -467,3 +467,45 @@ pub async fn list_containers(
     }
     Ok(response.containers)
 }
+
+// Inspect tries the image service only for the daemon's container-not-found errors.
+pub async fn inspect_object(
+    host: &str,
+    id: &str,
+    bformat: bool,
+    timeout: i32,
+) -> Result<String, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let response = proto::container_service_client::ContainerServiceClient::new(channel.clone())
+        .inspect(proto::InspectContainerRequest {
+            id: id.into(),
+            bformat,
+            timeout,
+        })
+        .await
+        .map_err(|error| format!("container inspect RPC failed: {error}"))?
+        .into_inner();
+    if response.cc == 0 {
+        return Ok(response.container_json);
+    }
+    if !response.errmsg.contains("Inspect invalid name")
+        && !response
+            .errmsg
+            .contains("No such image or container or accelerator")
+    {
+        return Err(response.errmsg);
+    }
+    let response = images_proto::images_service_client::ImagesServiceClient::new(channel)
+        .inspect(images_proto::InspectImageRequest {
+            id: id.into(),
+            bformat,
+            timeout,
+        })
+        .await
+        .map_err(|error| format!("image inspect RPC failed: {error}"))?
+        .into_inner();
+    if response.cc != 0 {
+        return Err(response.errmsg);
+    }
+    Ok(response.image_json)
+}
