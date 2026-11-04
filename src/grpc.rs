@@ -3,6 +3,7 @@ use std::time::Duration;
 use tonic::transport::{Channel, Endpoint};
 
 pub mod start;
+pub mod top;
 
 pub mod proto {
     tonic::include_proto!("containers");

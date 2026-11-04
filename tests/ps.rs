@@ -13,6 +13,13 @@ struct FakeList {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeList {
+    async fn top(
+        &self,
+        _: Request<proto::TopRequest>,
+    ) -> Result<Response<proto::TopResponse>, Status> {
+        Err(Status::unimplemented("top"))
+    }
+
     async fn list(&self, request: Request<ListRequest>) -> Result<Response<ListResponse>, Status> {
         self.calls.lock().unwrap().push(request.into_inner());
         Ok(Response::new(self.reply.clone()))

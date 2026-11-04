@@ -10,6 +10,7 @@ pub mod rm;
 pub mod run;
 pub mod start;
 pub mod stop;
+pub mod top;
 pub mod unpause;
 pub mod wait;
 

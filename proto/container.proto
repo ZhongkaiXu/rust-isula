@@ -3,6 +3,7 @@ syntax = "proto3";
 package containers;
 
 service ContainerService {
+    rpc Top(TopRequest) returns (TopResponse);
     rpc List(ListRequest) returns (ListResponse);
     rpc Create(CreateRequest) returns (CreateResponse);
     rpc Version(VersionRequest) returns (VersionResponse);
@@ -259,4 +260,16 @@ message ListResponse {
 	repeated Container containers = 1;
 	uint32 cc = 2;
 	string errmsg = 3;
+}
+
+message TopRequest {
+    string id = 1;
+    repeated string args = 2;
+}
+
+message TopResponse {
+    bytes titles = 1;
+    repeated bytes processes = 2;
+    uint32 cc = 3;
+    string errmsg = 4;
 }

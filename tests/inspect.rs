@@ -14,6 +14,13 @@ const IMAGE: &str = r#"{"image":{"id":"image-id","repo_tags":["busybox:latest"]}
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeInspect {
+    async fn top(
+        &self,
+        _: Request<proto::TopRequest>,
+    ) -> Result<Response<proto::TopResponse>, Status> {
+        Err(Status::unimplemented("top"))
+    }
+
     async fn list(
         &self,
         _: Request<proto::ListRequest>,

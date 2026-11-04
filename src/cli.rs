@@ -487,6 +487,7 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         "create" | "run" if args.is_empty() => {
             Err(format!("{command} requires an image or rootfs and command"))
         }
+        "top" if args.is_empty() => Err("top requires a container".into()),
         "wait" if args.is_empty() || args.len() >= 1000 => {
             Err("wait requires between 1 and 999 containers".into())
         }
@@ -680,7 +681,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
     check_args(command.name, &options, &positionals).map_err(|message| {
         if matches!(
             command.name,
-            "create" | "run" | "start" | "stop" | "restart" | "pause" | "unpause" | "wait"
+            "create" | "run" | "start" | "stop" | "restart" | "pause" | "unpause" | "wait" | "top"
         ) {
             CliError::option(message)
         } else {
