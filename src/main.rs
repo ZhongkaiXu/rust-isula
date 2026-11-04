@@ -39,6 +39,12 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "ps" => {
+            if let Err(error) = containers::ps::run(&command).await {
+                eprintln!("risula ps: {error}");
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "images" => {
             if let Err(error) = images::list::run(&command).await {
                 eprintln!("risula images: {error}");

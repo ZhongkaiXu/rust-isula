@@ -13,6 +13,13 @@ struct FakeRemove {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeRemove {
+    async fn list(
+        &self,
+        _: Request<proto::ListRequest>,
+    ) -> Result<Response<proto::ListResponse>, Status> {
+        Err(Status::unimplemented("list"))
+    }
+
     async fn resize(
         &self,
         _: Request<proto::ResizeRequest>,

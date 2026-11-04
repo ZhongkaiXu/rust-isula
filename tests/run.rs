@@ -29,6 +29,13 @@ struct FakeRun {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeRun {
+    async fn list(
+        &self,
+        _: Request<proto::ListRequest>,
+    ) -> Result<Response<proto::ListResponse>, Status> {
+        Err(Status::unimplemented("list"))
+    }
+
     async fn restart(
         &self,
         _request: Request<proto::RestartRequest>,

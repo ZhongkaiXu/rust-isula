@@ -448,3 +448,22 @@ pub async fn create_container(
         .map(|response| response.into_inner())
         .map_err(|error| format!("create RPC failed: {error}"))
 }
+
+pub async fn list_containers(
+    request: proto::ListRequest,
+    host: &str,
+) -> Result<Vec<proto::Container>, String> {
+    let channel = connect(host).await?;
+    let response = proto::container_service_client::ContainerServiceClient::new(channel)
+        .list(request)
+        .await
+        .map_err(|error| format!("ps RPC failed: {error}"))?
+        .into_inner();
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response.containers)
+}

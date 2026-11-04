@@ -2,6 +2,7 @@ pub(crate) mod console;
 pub mod create;
 pub mod kill;
 pub mod pause;
+pub mod ps;
 pub mod rename;
 pub mod restart;
 pub mod rm;
