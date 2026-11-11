@@ -5,6 +5,7 @@ use tonic::transport::{Channel, Endpoint};
 pub mod attach;
 pub mod cp;
 pub mod exec;
+pub mod logs;
 pub mod start;
 pub mod top;
 

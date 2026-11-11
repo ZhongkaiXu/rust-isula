@@ -3,6 +3,7 @@ syntax = "proto3";
 package containers;
 
 service ContainerService {
+    rpc Logs(LogsRequest) returns (stream LogsResponse);
     rpc CopyFromContainer(CopyFromContainerRequest) returns (stream CopyFromContainerResponse);
     rpc CopyToContainer(stream CopyToContainerRequest) returns (stream CopyToContainerResponse);
     rpc Attach(stream AttachRequest) returns (stream AttachResponse);
@@ -370,3 +371,20 @@ message CopyFromContainerRequest {
 message CopyFromContainerResponse { bytes data = 1; }
 message CopyToContainerRequest { bytes data = 1; }
 message CopyToContainerResponse { bool finish = 1; }
+
+message LogsRequest {
+    string id = 1;
+    string runtime = 2;
+    string since = 3;
+    string until = 4;
+    bool timestamps = 5;
+    bool follow = 6;
+    int64 tail = 7;
+    bool details = 8;
+}
+message LogsResponse {
+    bytes data = 1;
+    string stream = 2;
+    string time = 3;
+    bytes attrs = 4;
+}

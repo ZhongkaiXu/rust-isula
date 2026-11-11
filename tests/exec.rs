@@ -12,6 +12,14 @@ struct FakeExec {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeExec {
+    type LogsStream = tokio_stream::Empty<Result<proto::LogsResponse, Status>>;
+    async fn logs(
+        &self,
+        _: Request<proto::LogsRequest>,
+    ) -> Result<Response<Self::LogsStream>, Status> {
+        Err(Status::unimplemented("logs"))
+    }
+
     type CopyFromContainerStream =
         tokio_stream::Empty<Result<proto::CopyFromContainerResponse, Status>>;
     async fn copy_from_container(

@@ -326,6 +326,17 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const LOGS_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    flag("follow", Some('f'), "Follow log output"),
+    flag("timestamps", Some('t'), "Show timestamps"),
+    value(
+        "tail",
+        None,
+        "Number of lines to show from the end of the logs",
+    ),
+];
+
 const ATTACH_OPTIONS: &[OptionSpec] = &[flag("debug", Some('D'), "Enable debug mode")];
 
 const EXEC_OPTIONS: &[OptionSpec] = &[
@@ -390,6 +401,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "start" => START_OPTIONS,
         "exec" => EXEC_OPTIONS,
         "attach" | "cp" => ATTACH_OPTIONS,
+        "logs" => LOGS_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -412,7 +424,7 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 }
 
 fn accepts_bool_value(command: &str, option: &str) -> bool {
-    if matches!(command, "create" | "run" | "stats" | "exec")
+    if matches!(command, "create" | "run" | "stats" | "exec" | "logs")
         && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -455,7 +467,10 @@ fn option_value(
     command: &str,
 ) -> Result<String, CliError> {
     if let Some(value) = inline {
-        if !value.is_empty() || matches!(command, "kill" | "create" | "run") {
+        if !value.is_empty()
+            || matches!(command, "kill" | "create" | "run")
+            || (command == "logs" && name == "tail")
+        {
             return Ok(value.to_string());
         }
     } else {
@@ -504,6 +519,7 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "logs" if args.len() != 1 => Err("logs requires exactly one container".into()),
         "cp" if args.len() != 2 => Err("cp requires exactly two paths".into()),
         "attach" if args.len() != 1 || args[0].is_empty() => {
             Err("attach requires exactly one container".into())
