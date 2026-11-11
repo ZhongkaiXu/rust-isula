@@ -12,6 +12,12 @@ struct FakePause {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakePause {
+    async fn export(
+        &self,
+        _: Request<proto::ExportRequest>,
+    ) -> Result<Response<proto::ExportResponse>, Status> {
+        Err(Status::unimplemented("export"))
+    }
     type EventsStream = tokio_stream::Empty<Result<proto::Event, Status>>;
     async fn events(
         &self,

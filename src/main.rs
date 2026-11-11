@@ -39,6 +39,12 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "export" => {
+            if let Err(error) = containers::export::run(&command).await {
+                eprintln!("risula export: {}", error.message);
+                process::exit(error.exit_code);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "events" => {
             if let Err(error) = containers::events::run(&command).await {
                 eprintln!("risula events: {}", error.message);

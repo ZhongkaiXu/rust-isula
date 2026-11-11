@@ -4,6 +4,7 @@ package containers;
 import "google/protobuf/timestamp.proto";
 
 service ContainerService {
+    rpc Export(ExportRequest) returns (ExportResponse);
     rpc Events(EventsRequest) returns (stream Event);
     rpc Logs(LogsRequest) returns (stream LogsResponse);
     rpc CopyFromContainer(CopyFromContainerRequest) returns (stream CopyFromContainerResponse);
@@ -402,4 +403,14 @@ message Event {
     string opt = 2;
     string id = 3;
     map<string, string> annotations = 4;
+}
+
+message ExportRequest {
+    string id = 1;
+    string file = 2;
+}
+message ExportResponse {
+    string id = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
 }

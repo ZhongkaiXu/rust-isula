@@ -4,6 +4,7 @@ pub mod cp;
 pub mod create;
 pub mod events;
 pub mod exec;
+pub mod export;
 pub mod inspect;
 pub mod kill;
 pub mod logs;

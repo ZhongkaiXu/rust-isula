@@ -531,3 +531,19 @@ pub async fn stats(
     }
     Ok(response.containers)
 }
+
+pub async fn export_container(host: &str, request: proto::ExportRequest) -> Result<(), String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let response = proto::container_service_client::ContainerServiceClient::new(channel)
+        .export(request)
+        .await
+        .map_err(|error| format!("export RPC failed: {error}"))?
+        .into_inner();
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}
