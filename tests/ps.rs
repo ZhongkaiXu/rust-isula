@@ -13,6 +13,23 @@ struct FakeList {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeList {
+    type CopyFromContainerStream =
+        tokio_stream::Empty<Result<proto::CopyFromContainerResponse, Status>>;
+    async fn copy_from_container(
+        &self,
+        _: Request<proto::CopyFromContainerRequest>,
+    ) -> Result<Response<Self::CopyFromContainerStream>, Status> {
+        Err(Status::unimplemented("copy_from_container"))
+    }
+    type CopyToContainerStream =
+        tokio_stream::Empty<Result<proto::CopyToContainerResponse, Status>>;
+    async fn copy_to_container(
+        &self,
+        _: Request<tonic::Streaming<proto::CopyToContainerRequest>>,
+    ) -> Result<Response<Self::CopyToContainerStream>, Status> {
+        Err(Status::unimplemented("copy_to_container"))
+    }
+
     type AttachStream = tokio_stream::Empty<Result<proto::AttachResponse, Status>>;
     async fn attach(
         &self,

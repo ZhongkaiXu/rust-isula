@@ -389,7 +389,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "stop" => STOP_OPTIONS,
         "start" => START_OPTIONS,
         "exec" => EXEC_OPTIONS,
-        "attach" => ATTACH_OPTIONS,
+        "attach" | "cp" => ATTACH_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -504,6 +504,7 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "cp" if args.len() != 2 => Err("cp requires exactly two paths".into()),
         "attach" if args.len() != 1 || args[0].is_empty() => {
             Err("attach requires exactly one container".into())
         }

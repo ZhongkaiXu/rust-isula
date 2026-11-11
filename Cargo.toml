@@ -14,6 +14,8 @@ serde_json = { version = "1", features = ["preserve_order"] }
 libc = "0.2"
 tempfile = "3"
 tokio-stream = "0.1"
+tar = "0.4"
+xattr = "1"
 
 [build-dependencies]
 protoc-bin-vendored = "3.2.0"

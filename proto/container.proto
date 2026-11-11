@@ -3,6 +3,8 @@ syntax = "proto3";
 package containers;
 
 service ContainerService {
+    rpc CopyFromContainer(CopyFromContainerRequest) returns (stream CopyFromContainerResponse);
+    rpc CopyToContainer(stream CopyToContainerRequest) returns (stream CopyToContainerResponse);
     rpc Attach(stream AttachRequest) returns (stream AttachResponse);
     rpc Exec(ExecRequest) returns (ExecResponse);
     rpc RemoteExec(stream RemoteExecRequest) returns (stream RemoteExecResponse);
@@ -359,3 +361,12 @@ message AttachResponse {
     bytes stderr = 2;
     bool finish = 3;
 }
+
+message CopyFromContainerRequest {
+    string id = 1;
+    string runtime = 2;
+    string srcpath = 3;
+}
+message CopyFromContainerResponse { bytes data = 1; }
+message CopyToContainerRequest { bytes data = 1; }
+message CopyToContainerResponse { bool finish = 1; }

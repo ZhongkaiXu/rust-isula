@@ -39,6 +39,12 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "cp" => {
+            if let Err(error) = containers::cp::run(&command).await {
+                eprintln!("risula cp: {error}");
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "attach" => {
             match containers::attach::run(&command).await {
                 Ok(code) => process::exit(code),
