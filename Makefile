@@ -1,5 +1,7 @@
 TARGET ?= aarch64-unknown-linux-gnu
 TEST_THREADS ?= 2
+CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER ?= aarch64-linux-gnu-gcc
+export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER
 
 .PHONY: build build-target build-aarch64 test fmt
 

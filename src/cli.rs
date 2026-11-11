@@ -326,6 +326,15 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const EXEC_OPTIONS: &[OptionSpec] = &[
+    flag("detach", Some('d'), "Run without attaching input or output"),
+    flag("interactive", Some('i'), "Keep STDIN open"),
+    flag("tty", Some('t'), "Allocate a pseudo-TTY"),
+    value("env", Some('e'), "Set environment variables"),
+    value("user", Some('u'), "Username or UID (optionally with group)"),
+    value("workdir", None, "Working directory inside the container"),
+];
+
 const START_OPTIONS: &[OptionSpec] = &[flag("attach", Some('a'), "Attach STDOUT/STDERR")];
 
 const RESTART_OPTIONS: &[OptionSpec] = &[value(
@@ -377,6 +386,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "kill" => KILL_OPTIONS,
         "stop" => STOP_OPTIONS,
         "start" => START_OPTIONS,
+        "exec" => EXEC_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -399,7 +409,7 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 }
 
 fn accepts_bool_value(command: &str, option: &str) -> bool {
-    if matches!(command, "create" | "run" | "stats")
+    if matches!(command, "create" | "run" | "stats" | "exec")
         && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -491,6 +501,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "exec" if args.len() < 2 || args[0].is_empty() => {
+            Err("exec requires a container and command".into())
+        }
         "create" | "run" if args.is_empty() => {
             Err(format!("{command} requires an image or rootfs and command"))
         }
@@ -633,7 +646,8 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
                 // Upstream kill/restart options accept -s=TERM/-t=1 or a separate value.
                 // Without '=', remaining letters are parsed as more short options.
-                if matches!(command.name, "kill" | "restart" | "create" | "run") && spec.takes_value
+                if matches!(command.name, "kill" | "restart" | "create" | "run" | "exec")
+                    && spec.takes_value
                 {
                     let inline = letters.as_str().strip_prefix('=');
                     let value = option_value(args, &mut index, inline, spec.long, command.name)?;

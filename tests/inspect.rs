@@ -14,6 +14,20 @@ const IMAGE: &str = r#"{"image":{"id":"image-id","repo_tags":["busybox:latest"]}
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeInspect {
+    async fn exec(
+        &self,
+        _: Request<proto::ExecRequest>,
+    ) -> Result<Response<proto::ExecResponse>, Status> {
+        Err(Status::unimplemented("exec"))
+    }
+    type RemoteExecStream = tokio_stream::Empty<Result<proto::RemoteExecResponse, Status>>;
+    async fn remote_exec(
+        &self,
+        _: Request<tonic::Streaming<proto::RemoteExecRequest>>,
+    ) -> Result<Response<Self::RemoteExecStream>, Status> {
+        Err(Status::unimplemented("remote_exec"))
+    }
+
     async fn stats(
         &self,
         _: Request<proto::StatsRequest>,

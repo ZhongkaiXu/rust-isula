@@ -174,14 +174,20 @@ pub(crate) async fn remote_start_with_input(
     })
 }
 
-pub(crate) async fn resize(host: &str, id: &str, height: u32, width: u32) -> Result<(), String> {
+pub(crate) async fn resize_exec(
+    host: &str,
+    id: &str,
+    suffix: &str,
+    height: u32,
+    width: u32,
+) -> Result<(), String> {
     let channel = super::connect(host).await?;
     let response = proto::container_service_client::ContainerServiceClient::new(channel)
         .resize(proto::ResizeRequest {
             id: id.into(),
+            suffix: suffix.into(),
             height,
             width,
-            ..Default::default()
         })
         .await
         .map_err(|err| format!("resize RPC failed: {err}"))?

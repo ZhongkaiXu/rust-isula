@@ -3,6 +3,8 @@ syntax = "proto3";
 package containers;
 
 service ContainerService {
+    rpc Exec(ExecRequest) returns (ExecResponse);
+    rpc RemoteExec(stream RemoteExecRequest) returns (stream RemoteExecResponse);
     rpc Stats(StatsRequest) returns (StatsResponse);
     rpc Top(TopRequest) returns (TopResponse);
     rpc List(ListRequest) returns (ListResponse);
@@ -310,4 +312,38 @@ message StatsResponse {
 	repeated Container_info containers = 1;
 	uint32 cc = 2;
 	string errmsg = 3;
+}
+
+message ExecRequest {
+	// ContainerID specifies the container in which to exec the process.
+	string container_id = 1;
+	bool tty = 2;
+	bool open_stdin = 3;
+	bool attach_stdin = 4;
+	bool attach_stdout = 5;
+	bool attach_stderr = 6;
+	string stdin = 7;
+	string stdout = 8;
+	string stderr = 9;
+	repeated string argv = 10;
+	repeated string env = 11;
+	string user = 12;
+	string suffix = 13;
+	string workdir = 14;
+}
+message ExecResponse {
+	int32 pid = 1;
+	uint32 exit_code = 2;
+	uint32 cc = 3;
+	string errmsg = 4;
+}
+
+message RemoteExecRequest {
+    repeated bytes cmd = 1;
+    bool finish = 2;
+}
+message RemoteExecResponse {
+	bytes stdout = 1;
+	bytes stderr = 2;
+	bool finish = 3;
 }

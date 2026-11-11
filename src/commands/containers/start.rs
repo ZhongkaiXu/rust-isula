@@ -53,7 +53,7 @@ pub(super) fn start_result(
 }
 
 // The private temporary directory owns both FIFOs and removes them on every return path.
-fn open_fifo(path: &Path) -> std::io::Result<(AsyncFd<File>, File)> {
+pub(super) fn open_fifo(path: &Path) -> std::io::Result<(AsyncFd<File>, File)> {
     let name = CString::new(path.as_os_str().as_encoded_bytes())?;
     // SAFETY: name is NUL-terminated and remains alive for the syscall.
     if unsafe { libc::mkfifo(name.as_ptr(), 0o600) } != 0 {
@@ -71,7 +71,10 @@ fn open_fifo(path: &Path) -> std::io::Result<(AsyncFd<File>, File)> {
     Ok((AsyncFd::new(reader)?, writer))
 }
 
-async fn copy_output(fifo: AsyncFd<File>, mut output: impl Write) -> Result<(), CliError> {
+pub(super) async fn copy_output(
+    fifo: AsyncFd<File>,
+    mut output: impl Write,
+) -> Result<(), CliError> {
     let mut buffer = [0; 16 * 1024];
     loop {
         let mut ready = fifo.readable().await.map_err(|err| error(err, 1))?;

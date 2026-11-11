@@ -152,6 +152,10 @@ pub(super) async fn copy_input(mut input: Input, fifo: AsyncFd<File>, tty: bool)
 }
 
 pub(super) async fn resize(host: &str, id: &str, tty: bool) {
+    resize_exec(host, id, "", tty).await
+}
+
+pub(super) async fn resize_exec(host: &str, id: &str, suffix: &str, tty: bool) {
     if !tty || unsafe { libc::isatty(0) } != 1 {
         return std::future::pending().await;
     }
@@ -166,7 +170,7 @@ pub(super) async fn resize(host: &str, id: &str, tty: bool) {
         }
         let current = (size.ws_row, size.ws_col);
         if current != previous
-            && rpc::resize(host, id, current.0.into(), current.1.into())
+            && rpc::resize_exec(host, id, suffix, current.0.into(), current.1.into())
                 .await
                 .is_ok()
         {

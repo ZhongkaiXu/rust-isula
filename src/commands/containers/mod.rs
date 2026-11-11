@@ -1,5 +1,6 @@
 pub(crate) mod console;
 pub mod create;
+pub mod exec;
 pub mod inspect;
 pub mod kill;
 pub mod pause;
