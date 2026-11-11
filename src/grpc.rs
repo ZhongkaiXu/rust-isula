@@ -1,3 +1,4 @@
+pub mod events;
 use std::collections::HashMap;
 use std::time::Duration;
 use tonic::transport::{Channel, Endpoint};

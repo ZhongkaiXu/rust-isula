@@ -2,6 +2,7 @@ pub mod attach;
 pub(crate) mod console;
 pub mod cp;
 pub mod create;
+pub mod events;
 pub mod exec;
 pub mod inspect;
 pub mod kill;

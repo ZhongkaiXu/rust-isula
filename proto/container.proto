@@ -1,8 +1,10 @@
 // RPC fields from iSulad v2.1.5 container.proto.
 syntax = "proto3";
 package containers;
+import "google/protobuf/timestamp.proto";
 
 service ContainerService {
+    rpc Events(EventsRequest) returns (stream Event);
     rpc Logs(LogsRequest) returns (stream LogsResponse);
     rpc CopyFromContainer(CopyFromContainerRequest) returns (stream CopyFromContainerResponse);
     rpc CopyToContainer(stream CopyToContainerRequest) returns (stream CopyToContainerResponse);
@@ -387,4 +389,17 @@ message LogsResponse {
     string stream = 2;
     string time = 3;
     bytes attrs = 4;
+}
+
+message EventsRequest {
+    google.protobuf.Timestamp since = 1;
+    google.protobuf.Timestamp until = 2;
+    bool storeOnly = 3;
+    string id = 4;
+}
+message Event {
+    google.protobuf.Timestamp timestamp = 1;
+    string opt = 2;
+    string id = 3;
+    map<string, string> annotations = 4;
 }

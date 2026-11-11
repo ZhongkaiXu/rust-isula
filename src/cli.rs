@@ -326,6 +326,21 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const EVENTS_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    value("name", Some('n'), "Name of the container"),
+    value(
+        "since",
+        Some('S'),
+        "Show all events created since this timestamp",
+    ),
+    value(
+        "until",
+        Some('U'),
+        "Show all events created until this timestamp",
+    ),
+];
+
 const LOGS_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     flag("follow", Some('f'), "Follow log output"),
@@ -402,6 +417,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "exec" => EXEC_OPTIONS,
         "attach" | "cp" => ATTACH_OPTIONS,
         "logs" => LOGS_OPTIONS,
+        "events" => EVENTS_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -424,8 +440,10 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 }
 
 fn accepts_bool_value(command: &str, option: &str) -> bool {
-    if matches!(command, "create" | "run" | "stats" | "exec" | "logs")
-        && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
+    if matches!(
+        command,
+        "create" | "run" | "stats" | "exec" | "logs" | "events"
+    ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
     }
@@ -468,7 +486,7 @@ fn option_value(
 ) -> Result<String, CliError> {
     if let Some(value) = inline {
         if !value.is_empty()
-            || matches!(command, "kill" | "create" | "run")
+            || matches!(command, "kill" | "create" | "run" | "events")
             || (command == "logs" && name == "tail")
         {
             return Ok(value.to_string());

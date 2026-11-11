@@ -13,6 +13,13 @@ struct FakeList {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeList {
+    type EventsStream = tokio_stream::Empty<Result<proto::Event, Status>>;
+    async fn events(
+        &self,
+        _: Request<proto::EventsRequest>,
+    ) -> Result<Response<Self::EventsStream>, Status> {
+        Err(Status::unimplemented("events"))
+    }
     type LogsStream = tokio_stream::Empty<Result<proto::LogsResponse, Status>>;
     async fn logs(
         &self,
