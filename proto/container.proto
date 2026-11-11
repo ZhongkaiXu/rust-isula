@@ -3,6 +3,7 @@ syntax = "proto3";
 package containers;
 
 service ContainerService {
+    rpc Attach(stream AttachRequest) returns (stream AttachResponse);
     rpc Exec(ExecRequest) returns (ExecResponse);
     rpc RemoteExec(stream RemoteExecRequest) returns (stream RemoteExecResponse);
     rpc Stats(StatsRequest) returns (StatsResponse);
@@ -346,4 +347,15 @@ message RemoteExecResponse {
 	bytes stdout = 1;
 	bytes stderr = 2;
 	bool finish = 3;
+}
+
+message AttachRequest {
+    bytes stdin = 1;
+    bool finish = 2;
+}
+
+message AttachResponse {
+    bytes stdout = 1;
+    bytes stderr = 2;
+    bool finish = 3;
 }

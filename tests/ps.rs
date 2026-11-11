@@ -13,6 +13,14 @@ struct FakeList {
 
 #[tonic::async_trait]
 impl proto::container_service_server::ContainerService for FakeList {
+    type AttachStream = tokio_stream::Empty<Result<proto::AttachResponse, Status>>;
+    async fn attach(
+        &self,
+        _: Request<tonic::Streaming<proto::AttachRequest>>,
+    ) -> Result<Response<Self::AttachStream>, Status> {
+        Err(Status::unimplemented("attach"))
+    }
+
     async fn exec(
         &self,
         _: Request<proto::ExecRequest>,

@@ -1,3 +1,4 @@
+pub mod attach;
 pub(crate) mod console;
 pub mod create;
 pub mod exec;

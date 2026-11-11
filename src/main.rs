@@ -39,6 +39,15 @@ async fn main() {
                 }
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "attach" => {
+            match containers::attach::run(&command).await {
+                Ok(code) => process::exit(code),
+                Err(error) => {
+                    eprintln!("risula attach: {}", error.message);
+                    process::exit(error.exit_code);
+                }
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "exec" => {
             match containers::exec::run(&command).await {
                 Ok(code) => process::exit(code),
