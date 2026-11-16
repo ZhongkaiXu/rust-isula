@@ -4,6 +4,7 @@ package containers;
 import "google/protobuf/timestamp.proto";
 
 service ContainerService {
+    rpc Update(UpdateRequest) returns (UpdateResponse);
     rpc Export(ExportRequest) returns (ExportResponse);
     rpc Events(EventsRequest) returns (stream Event);
     rpc Logs(LogsRequest) returns (stream LogsResponse);
@@ -410,6 +411,16 @@ message ExportRequest {
     string file = 2;
 }
 message ExportResponse {
+    string id = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message UpdateRequest {
+    string id = 1;
+    string hostconfig = 2;
+}
+message UpdateResponse {
     string id = 1;
     uint32 cc = 2;
     string errmsg = 3;

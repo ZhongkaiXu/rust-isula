@@ -548,3 +548,19 @@ pub async fn export_container(host: &str, request: proto::ExportRequest) -> Resu
     }
     Ok(())
 }
+
+pub async fn update_container(host: &str, request: proto::UpdateRequest) -> Result<(), String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let response = proto::container_service_client::ContainerServiceClient::new(channel)
+        .update(request)
+        .await
+        .map_err(|error| format!("update RPC failed: {error}"))?
+        .into_inner();
+    if response.cc != 0 {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(())
+}

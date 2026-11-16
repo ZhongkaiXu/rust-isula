@@ -1,5 +1,5 @@
 mod config;
-mod parse;
+pub(super) mod parse;
 
 use crate::cli::{CliError, Invocation};
 use crate::{commands::images::pull, grpc};

@@ -1,6 +1,6 @@
 use serde_json::{json, Value};
 
-pub(super) fn integer(value: &str) -> Result<i64, String> {
+pub(crate) fn integer(value: &str) -> Result<i64, String> {
     let value = value.trim_start_matches([' ', '\t', '\n', '\r', '\x0b', '\x0c']);
     let (sign, text) = if let Some(s) = value.strip_prefix('-') {
         (-1_i128, s)
@@ -42,7 +42,7 @@ pub(super) fn unsigned(value: &str) -> Result<u64, String> {
 }
 
 // Keep upstream base-0 integer parsing and scale the fraction without float rounding.
-pub(super) fn scaled(value: &str, scale: i64) -> Result<i64, String> {
+pub(crate) fn scaled(value: &str, scale: i64) -> Result<i64, String> {
     let (negative, text) = if let Some(s) = value.strip_prefix('-') {
         (true, s)
     } else {
@@ -73,7 +73,7 @@ pub(super) fn scaled(value: &str, scale: i64) -> Result<i64, String> {
     i64::try_from(if negative { -n } else { n }).map_err(|_| "quantity out of range".into())
 }
 
-pub(super) fn bytes(value: &str) -> Result<i64, String> {
+pub(crate) fn bytes(value: &str) -> Result<i64, String> {
     if !value.as_bytes().first().is_some_and(u8::is_ascii_digit) {
         return Err(format!("invalid byte size: {value}"));
     }

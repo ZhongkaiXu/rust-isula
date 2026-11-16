@@ -20,6 +20,7 @@ pub mod stats;
 pub mod stop;
 pub mod top;
 pub mod unpause;
+pub mod update;
 pub mod wait;
 
 // Match the upstream strtol(base=0): signed decimal, octal or hexadecimal i32.

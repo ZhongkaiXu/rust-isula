@@ -326,6 +326,40 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const UPDATE_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    value("cpu-shares", None, "CPU shares (relative weight)"),
+    value("cpu-period", None, "Limit CPU CFS period"),
+    value("cpu-quota", None, "Limit CPU CFS quota"),
+    value("cpuset-cpus", None, "CPUs in which to allow execution"),
+    value("cpuset-mems", None, "MEMs in which to allow execution"),
+    value("kernel-memory", None, "Kernel memory limit"),
+    value("memory", Some('m'), "Memory limit"),
+    value("memory-reservation", None, "Memory soft limit"),
+    value(
+        "memory-swap",
+        None,
+        "Memory plus swap limit; -1 means unlimited swap",
+    ),
+    value(
+        "restart",
+        None,
+        "Restart policy to apply when a container exits",
+    ),
+    value("blkio-weight", None, "Block IO relative weight"),
+    value(
+        "cpu-rt-period",
+        None,
+        "CPU real-time period in microseconds",
+    ),
+    value(
+        "cpu-rt-runtime",
+        None,
+        "CPU real-time runtime in microseconds",
+    ),
+    value("cpus", None, "Number of CPUs"),
+];
+
 const EXPORT_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     value("output", Some('o'), "Write to a file"),
@@ -424,6 +458,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "logs" => LOGS_OPTIONS,
         "events" => EVENTS_OPTIONS,
         "export" => EXPORT_OPTIONS,
+        "update" => UPDATE_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -448,7 +483,7 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 fn accepts_bool_value(command: &str, option: &str) -> bool {
     if matches!(
         command,
-        "create" | "run" | "stats" | "exec" | "logs" | "events" | "export" | "port"
+        "create" | "run" | "stats" | "exec" | "logs" | "events" | "export" | "port" | "update"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -492,7 +527,10 @@ fn option_value(
 ) -> Result<String, CliError> {
     if let Some(value) = inline {
         if !value.is_empty()
-            || matches!(command, "kill" | "create" | "run" | "events" | "export")
+            || matches!(
+                command,
+                "kill" | "create" | "run" | "events" | "export" | "update"
+            )
             || (command == "logs" && name == "tail")
         {
             return Ok(value.to_string());
@@ -693,8 +731,10 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
                     .ok_or_else(|| format!("unknown option: -{letter}"))?;
                 // Upstream kill/restart options accept -s=TERM/-t=1 or a separate value.
                 // Without '=', remaining letters are parsed as more short options.
-                if matches!(command.name, "kill" | "restart" | "create" | "run" | "exec")
-                    && spec.takes_value
+                if matches!(
+                    command.name,
+                    "kill" | "restart" | "create" | "run" | "exec" | "update"
+                ) && spec.takes_value
                 {
                     let inline = letters.as_str().strip_prefix('=');
                     let value = option_value(args, &mut index, inline, spec.long, command.name)?;
@@ -737,6 +777,23 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
             }
         }
         index += 1;
+    }
+
+    if command.name == "update" {
+        if positionals.is_empty() {
+            return Err(CliError::option(
+                "Update requires at least 1 container name".into(),
+            ));
+        }
+        // Native checks the original argc, including the program name.
+        if args.len() <= 2 {
+            return Err(CliError::command(
+                "You must provide one or more update flags when using this command".into(),
+            ));
+        }
+        if positionals.len() >= 1000 {
+            return Err(CliError::command("Too many containers to update".into()));
+        }
     }
 
     check_host(&host).map_err(|message| {

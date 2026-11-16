@@ -1,0 +1,572 @@
+[
+  {
+    "args": [
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {}
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart",
+      "no",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": "no"
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart=",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": ""
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart",
+      "on-failure:03",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": "on-failure",
+            "MaximumRetryCount": 3
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart",
+      "bad",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": "bad"
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart",
+      "on-failure:-1",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": "on-failure",
+            "MaximumRetryCount": -1
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart",
+      "always:1",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": "always",
+            "MaximumRetryCount": 1
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--restart",
+      "on-failure:bad",
+      "demo"
+    ],
+    "code": 1,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--restart",
+      "bad:x",
+      "--restart",
+      "no",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "RestartPolicy": {
+            "Name": "no"
+          }
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpuset-cpus=",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {}
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpuset-cpus",
+      "invalid",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "CpusetCpus": "invalid"
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpuset-mems",
+      "0",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "CpusetMems": "0"
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpu-shares",
+      "0x200",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "CPUShares": 512
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpu-period",
+      "0100000",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "CPUPeriod": 32768
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpu-quota",
+      "-1",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "CPUQuota": -1
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpu-rt-period",
+      "1000000",
+      "--cpu-rt-runtime",
+      "500000",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "CPURealtimePeriod": 1000000,
+          "CPURealtimeRuntime": 500000
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpus",
+      "1.25",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "NanoCpus": 1250000000
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpus",
+      "0",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {}
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpus",
+      "0.0000000009",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {}
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpus",
+      "-1",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--cpus",
+      "1e2",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--memory",
+      "1.5m",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "Memory": 1572864
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--memory",
+      "0",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {}
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--memory-swap",
+      "-1",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "MemorySwap": -1
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--memory-swap",
+      "-2",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--memory",
+      "1MiB",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "Memory": 1048576
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--memory-reservation",
+      "8m",
+      "--kernel-memory",
+      "16m",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "KernelMemory": 16777216,
+          "MemoryReservation": 8388608
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--blkio-weight",
+      "65535",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "BlkioWeight": 65535
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--blkio-weight",
+      "65536",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--blkio-weight",
+      "9",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "BlkioWeight": 9
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--cpu-shares",
+      "bad",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--cpu-shares",
+      "512",
+      "--cpu-shares",
+      "0",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {}
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "--memory",
+      "bad",
+      "--memory",
+      "8m",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "-m=8m",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "Memory": 8388608
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  },
+  {
+    "args": [
+      "-m8m",
+      "demo"
+    ],
+    "code": 125,
+    "requests": [],
+    "stdout": ""
+  },
+  {
+    "args": [
+      "--cpus",
+      "1",
+      "--cpu-period",
+      "100000",
+      "demo"
+    ],
+    "code": 0,
+    "requests": [
+      {
+        "id": "demo",
+        "host": {
+          "NanoCpus": 1000000000,
+          "CPUPeriod": 100000
+        }
+      }
+    ],
+    "stdout": "demo\n"
+  }
+]
