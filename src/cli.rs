@@ -459,7 +459,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "stop" => STOP_OPTIONS,
         "start" => START_OPTIONS,
         "exec" => EXEC_OPTIONS,
-        "attach" | "cp" | "port" => ATTACH_OPTIONS,
+        "attach" | "cp" | "port" | "volume rm" => ATTACH_OPTIONS,
         "logs" => LOGS_OPTIONS,
         "events" => EVENTS_OPTIONS,
         "export" => EXPORT_OPTIONS,
@@ -499,6 +499,7 @@ fn accepts_bool_value(command: &str, option: &str) -> bool {
             | "port"
             | "update"
             | "volume ls"
+            | "volume rm"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -596,6 +597,9 @@ fn check_host(host: &str) -> Result<(), String> {
 
 fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Result<(), String> {
     match command {
+        "volume rm" if args.is_empty() || args.len() >= 1000 => {
+            Err("volume rm requires between 1 and 999 volume names".into())
+        }
         "logs" if args.len() != 1 => Err("logs requires exactly one container".into()),
         "cp" if args.len() != 2 => Err("cp requires exactly two paths".into()),
         "attach" if args.len() != 1 || args[0].is_empty() => {
@@ -676,7 +680,9 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
 pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError> {
     parse_inner(args, env_host).map_err(|mut error| {
         if args.first().is_some_and(|s| s == "volume")
-            && args.get(1).is_some_and(|s| s == "ls")
+            && args
+                .get(1)
+                .is_some_and(|s| matches!(s.as_str(), "ls" | "rm"))
             && !error.message.starts_with("unknown option:")
         {
             error.exit_code = 1;

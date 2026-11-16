@@ -3,6 +3,7 @@ syntax = "proto3";
 package volume;
 
 service VolumeService {
+    rpc Remove(RemoveVolumeRequest) returns (RemoveVolumeResponse);
     rpc List(ListVolumeRequest) returns (ListVolumeResponse);
 }
 message Volume {
@@ -14,4 +15,12 @@ message ListVolumeResponse {
     repeated Volume volumes = 1;
     uint32 cc = 2;
     string errmsg = 3;
+}
+
+message RemoveVolumeRequest {
+    string name = 1;
+}
+message RemoveVolumeResponse {
+    uint32 cc = 1;
+    string errmsg = 2;
 }
