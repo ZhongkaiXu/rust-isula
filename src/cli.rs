@@ -420,7 +420,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "stop" => STOP_OPTIONS,
         "start" => START_OPTIONS,
         "exec" => EXEC_OPTIONS,
-        "attach" | "cp" => ATTACH_OPTIONS,
+        "attach" | "cp" | "port" => ATTACH_OPTIONS,
         "logs" => LOGS_OPTIONS,
         "events" => EVENTS_OPTIONS,
         "export" => EXPORT_OPTIONS,
@@ -448,7 +448,7 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 fn accepts_bool_value(command: &str, option: &str) -> bool {
     if matches!(
         command,
-        "create" | "run" | "stats" | "exec" | "logs" | "events" | "export"
+        "create" | "run" | "stats" | "exec" | "logs" | "events" | "export" | "port"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
