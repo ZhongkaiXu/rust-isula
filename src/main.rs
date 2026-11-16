@@ -3,7 +3,7 @@ use std::process;
 
 use risula::cli::{self, Action};
 use risula::{
-    commands::{containers, images},
+    commands::{containers, images, volumes},
     grpc,
 };
 
@@ -16,6 +16,12 @@ async fn main() {
     match cli::parse(&args, env_host.as_deref()) {
         Ok(Action::Help(topic)) => cli::print_help(topic),
         Ok(Action::Version) => println!("Version {}", env!("CARGO_PKG_VERSION")),
+        Ok(Action::Invoke(command)) if command.name == "volume ls" => {
+            if let Err(error) = volumes::list::run(&command).await {
+                eprintln!("risula volume ls: {error}");
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "version" => {
             match grpc::version(&command.host).await {
                 Ok(server) => {

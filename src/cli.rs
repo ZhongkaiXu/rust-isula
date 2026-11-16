@@ -326,6 +326,11 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const VOLUME_LIST_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    flag("quiet", Some('q'), "Only display volume names"),
+];
+
 const UPDATE_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     value("cpu-shares", None, "CPU shares (relative weight)"),
@@ -459,6 +464,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "events" => EVENTS_OPTIONS,
         "export" => EXPORT_OPTIONS,
         "update" => UPDATE_OPTIONS,
+        "volume ls" => VOLUME_LIST_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -483,7 +489,16 @@ fn find_command(name: &str) -> Option<&'static CommandSpec> {
 fn accepts_bool_value(command: &str, option: &str) -> bool {
     if matches!(
         command,
-        "create" | "run" | "stats" | "exec" | "logs" | "events" | "export" | "port" | "update"
+        "create"
+            | "run"
+            | "stats"
+            | "exec"
+            | "logs"
+            | "events"
+            | "export"
+            | "port"
+            | "update"
+            | "volume ls"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -659,6 +674,18 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
 }
 
 pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError> {
+    parse_inner(args, env_host).map_err(|mut error| {
+        if args.first().is_some_and(|s| s == "volume")
+            && args.get(1).is_some_and(|s| s == "ls")
+            && !error.message.starts_with("unknown option:")
+        {
+            error.exit_code = 1;
+        }
+        error
+    })
+}
+
+fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliError> {
     if args.is_empty() || args[0] == "--help" {
         return Ok(Action::Help(HelpTopic::Root));
     }

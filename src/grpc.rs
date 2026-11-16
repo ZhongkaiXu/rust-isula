@@ -1,5 +1,6 @@
 pub mod events;
 pub mod port;
+pub mod volumes;
 use std::collections::HashMap;
 use std::time::Duration;
 use tonic::transport::{Channel, Endpoint};
