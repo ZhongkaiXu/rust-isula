@@ -12,6 +12,13 @@ struct FakeVolumes {
 }
 #[tonic::async_trait]
 impl proto::volume_service_server::VolumeService for FakeVolumes {
+    async fn prune(
+        &self,
+        _: Request<proto::PruneVolumeRequest>,
+    ) -> Result<Response<proto::PruneVolumeResponse>, Status> {
+        Err(Status::unimplemented("prune"))
+    }
+
     async fn remove(
         &self,
         _: Request<proto::RemoveVolumeRequest>,

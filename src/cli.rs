@@ -326,6 +326,11 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const VOLUME_PRUNE_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    flag("force", Some('f'), "Do not prompt for confirmation"),
+];
+
 const VOLUME_LIST_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     flag("quiet", Some('q'), "Only display volume names"),
@@ -465,6 +470,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "export" => EXPORT_OPTIONS,
         "update" => UPDATE_OPTIONS,
         "volume ls" => VOLUME_LIST_OPTIONS,
+        "volume prune" => VOLUME_PRUNE_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
         "ps" => PS_OPTIONS,
@@ -500,6 +506,7 @@ fn accepts_bool_value(command: &str, option: &str) -> bool {
             | "update"
             | "volume ls"
             | "volume rm"
+            | "volume prune"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -682,7 +689,7 @@ pub fn parse(args: &[String], env_host: Option<&str>) -> Result<Action, CliError
         if args.first().is_some_and(|s| s == "volume")
             && args
                 .get(1)
-                .is_some_and(|s| matches!(s.as_str(), "ls" | "rm"))
+                .is_some_and(|s| matches!(s.as_str(), "ls" | "rm" | "prune"))
             && !error.message.starts_with("unknown option:")
         {
             error.exit_code = 1;

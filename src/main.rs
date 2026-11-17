@@ -21,6 +21,12 @@ async fn main() {
                 process::exit(1);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "volume prune" => {
+            if let Err(error) = volumes::prune::run(&command).await {
+                eprintln!("risula volume prune: {error}");
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "volume ls" => {
             if let Err(error) = volumes::list::run(&command).await {
                 eprintln!("risula volume ls: {error}");
