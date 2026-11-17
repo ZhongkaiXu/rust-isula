@@ -2,6 +2,7 @@
 syntax = "proto3";
 package network;
 service NetworkService {
+    rpc Create(NetworkCreateRequest) returns (NetworkCreateResponse);
     rpc List(NetworkListRequest) returns (NetworkListResponse);
 }
 message NetworkInfo {
@@ -14,6 +15,19 @@ message NetworkListRequest {
 }
 message NetworkListResponse {
     repeated NetworkInfo networks = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message NetworkCreateRequest {
+    string name = 1;
+    string driver = 2;
+    string gateway = 3;
+    bool internal = 4;
+    string subnet = 5;
+}
+message NetworkCreateResponse {
+    string name = 1;
     uint32 cc = 2;
     string errmsg = 3;
 }

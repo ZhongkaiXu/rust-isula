@@ -326,6 +326,18 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const NETWORK_CREATE_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    value("driver", Some('d'), "Network driver (default bridge)"),
+    value("gateway", None, "Gateway for the subnet"),
+    flag(
+        "internal",
+        None,
+        "Restrict external access from this network",
+    ),
+    value("subnet", None, "Subnet in CIDR format"),
+];
+
 const NETWORK_LIST_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     flag("quiet", Some('q'), "Only display network names"),
@@ -477,6 +489,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "update" => UPDATE_OPTIONS,
         "volume ls" => VOLUME_LIST_OPTIONS,
         "network ls" => NETWORK_LIST_OPTIONS,
+        "network create" => NETWORK_CREATE_OPTIONS,
         "volume prune" => VOLUME_PRUNE_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
@@ -515,6 +528,7 @@ fn accepts_bool_value(command: &str, option: &str) -> bool {
             | "volume rm"
             | "volume prune"
             | "network ls"
+            | "network create"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -564,6 +578,7 @@ fn option_value(
             )
             || (command == "logs" && name == "tail")
             || (command == "network ls" && name == "filter")
+            || command == "network create"
         {
             return Ok(value.to_string());
         }
@@ -667,6 +682,9 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         }
         "pull" if args.len() != 1 || args[0].is_empty() => {
             Err("pull requires one image name".to_string())
+        }
+        "network create" if args.len() > 1 => {
+            Err("network create requires at most one network name".into())
         }
         "load" if !args.is_empty() => Err("load takes no positional arguments".to_string()),
         "load" if !options.iter().any(|option| option.name == "input") => {
@@ -782,7 +800,14 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                 // Without '=', remaining letters are parsed as more short options.
                 if matches!(
                     command.name,
-                    "kill" | "restart" | "create" | "run" | "exec" | "update" | "network ls"
+                    "kill"
+                        | "restart"
+                        | "create"
+                        | "run"
+                        | "exec"
+                        | "update"
+                        | "network ls"
+                        | "network create"
                 ) && spec.takes_value
                 {
                     let inline = letters.as_str().strip_prefix('=');
@@ -865,6 +890,7 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                 | "wait"
                 | "top"
                 | "network ls"
+                | "network create"
         ) {
             CliError::option(message)
         } else {

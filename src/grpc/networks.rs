@@ -23,3 +23,22 @@ pub async fn list(
     }
     Ok(response.networks)
 }
+
+pub async fn create(
+    host: &str,
+    request: proto::NetworkCreateRequest,
+) -> Result<proto::NetworkCreateResponse, String> {
+    let channel = connect_with_timeout(host, None).await?;
+    let response = proto::network_service_client::NetworkServiceClient::new(channel)
+        .create(request)
+        .await
+        .map_err(|e| format!("network create RPC failed: {e}"))?
+        .into_inner();
+    if response.cc != 0 || response.name.is_empty() {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response)
+}
