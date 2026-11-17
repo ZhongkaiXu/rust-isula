@@ -1,0 +1,19 @@
+// RPC fields from iSulad v2.1.5 network.proto.
+syntax = "proto3";
+package network;
+service NetworkService {
+    rpc List(NetworkListRequest) returns (NetworkListResponse);
+}
+message NetworkInfo {
+    string name = 1;
+    string version = 2;
+    repeated string plugins = 3;
+}
+message NetworkListRequest {
+    map<string, string> filters = 1;
+}
+message NetworkListResponse {
+    repeated NetworkInfo networks = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}

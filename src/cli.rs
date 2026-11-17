@@ -326,6 +326,12 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const NETWORK_LIST_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    flag("quiet", Some('q'), "Only display network names"),
+    value("filter", Some('f'), "Filter output by name or plugin"),
+];
+
 const VOLUME_PRUNE_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     flag("force", Some('f'), "Do not prompt for confirmation"),
@@ -470,6 +476,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "export" => EXPORT_OPTIONS,
         "update" => UPDATE_OPTIONS,
         "volume ls" => VOLUME_LIST_OPTIONS,
+        "network ls" => NETWORK_LIST_OPTIONS,
         "volume prune" => VOLUME_PRUNE_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
@@ -507,6 +514,7 @@ fn accepts_bool_value(command: &str, option: &str) -> bool {
             | "volume ls"
             | "volume rm"
             | "volume prune"
+            | "network ls"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -555,6 +563,7 @@ fn option_value(
                 "kill" | "create" | "run" | "events" | "export" | "update"
             )
             || (command == "logs" && name == "tail")
+            || (command == "network ls" && name == "filter")
         {
             return Ok(value.to_string());
         }
@@ -773,7 +782,7 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                 // Without '=', remaining letters are parsed as more short options.
                 if matches!(
                     command.name,
-                    "kill" | "restart" | "create" | "run" | "exec" | "update"
+                    "kill" | "restart" | "create" | "run" | "exec" | "update" | "network ls"
                 ) && spec.takes_value
                 {
                     let inline = letters.as_str().strip_prefix('=');
@@ -846,7 +855,16 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
     check_args(command.name, &options, &positionals).map_err(|message| {
         if matches!(
             command.name,
-            "create" | "run" | "start" | "stop" | "restart" | "pause" | "unpause" | "wait" | "top"
+            "create"
+                | "run"
+                | "start"
+                | "stop"
+                | "restart"
+                | "pause"
+                | "unpause"
+                | "wait"
+                | "top"
+                | "network ls"
         ) {
             CliError::option(message)
         } else {

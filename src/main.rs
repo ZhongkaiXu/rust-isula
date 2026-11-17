@@ -3,7 +3,7 @@ use std::process;
 
 use risula::cli::{self, Action};
 use risula::{
-    commands::{containers, images, volumes},
+    commands::{containers, images, networks, volumes},
     grpc,
 };
 
@@ -24,6 +24,12 @@ async fn main() {
         Ok(Action::Invoke(command)) if command.name == "volume prune" => {
             if let Err(error) = volumes::prune::run(&command).await {
                 eprintln!("risula volume prune: {error}");
+                process::exit(1);
+            }
+        }
+        Ok(Action::Invoke(command)) if command.name == "network ls" => {
+            if let Err(error) = networks::list::run(&command).await {
+                eprintln!("risula network ls: {error}");
                 process::exit(1);
             }
         }

@@ -7,6 +7,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         PathBuf::from("proto/container.proto"),
         PathBuf::from("proto/images.proto"),
         PathBuf::from("proto/volumes.proto"),
+        PathBuf::from("proto/network.proto"),
     ];
     let includes = [PathBuf::from("proto"), protoc_bin_vendored::include_path()?];
     tonic_prost_build::configure().compile_protos(&protos, &includes)?;
