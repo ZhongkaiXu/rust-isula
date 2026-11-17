@@ -10,6 +10,12 @@ struct FakeNetworks {
 }
 #[tonic::async_trait]
 impl proto::network_service_server::NetworkService for FakeNetworks {
+    async fn inspect(
+        &self,
+        _: Request<proto::NetworkInspectRequest>,
+    ) -> Result<Response<proto::NetworkInspectResponse>, Status> {
+        Err(Status::unimplemented("inspect"))
+    }
     async fn list(
         &self,
         _: Request<proto::NetworkListRequest>,

@@ -326,6 +326,15 @@ const STOP_OPTIONS: &[OptionSpec] = &[
     ),
 ];
 
+const NETWORK_INSPECT_OPTIONS: &[OptionSpec] = &[
+    flag("debug", Some('D'), "Enable debug mode"),
+    value(
+        "format",
+        Some('f'),
+        "Format the output using the given go template",
+    ),
+];
+
 const NETWORK_CREATE_OPTIONS: &[OptionSpec] = &[
     flag("debug", Some('D'), "Enable debug mode"),
     value("driver", Some('d'), "Network driver (default bridge)"),
@@ -490,6 +499,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "volume ls" => VOLUME_LIST_OPTIONS,
         "network ls" => NETWORK_LIST_OPTIONS,
         "network create" => NETWORK_CREATE_OPTIONS,
+        "network inspect" => NETWORK_INSPECT_OPTIONS,
         "volume prune" => VOLUME_PRUNE_OPTIONS,
         "restart" => RESTART_OPTIONS,
         "search" => SEARCH_OPTIONS,
@@ -529,6 +539,7 @@ fn accepts_bool_value(command: &str, option: &str) -> bool {
             | "volume prune"
             | "network ls"
             | "network create"
+            | "network inspect"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -578,7 +589,7 @@ fn option_value(
             )
             || (command == "logs" && name == "tail")
             || (command == "network ls" && name == "filter")
-            || command == "network create"
+            || matches!(command, "network create" | "network inspect")
         {
             return Ok(value.to_string());
         }
@@ -682,6 +693,9 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         }
         "pull" if args.len() != 1 || args[0].is_empty() => {
             Err("pull requires one image name".to_string())
+        }
+        "network inspect" if args.is_empty() || args.len() >= 1000 => {
+            Err("network inspect requires between 1 and 999 networks".into())
         }
         "network create" if args.len() > 1 => {
             Err("network create requires at most one network name".into())
@@ -808,6 +822,7 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                         | "update"
                         | "network ls"
                         | "network create"
+                        | "network inspect"
                 ) && spec.takes_value
                 {
                     let inline = letters.as_str().strip_prefix('=');
@@ -891,6 +906,7 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                 | "top"
                 | "network ls"
                 | "network create"
+                | "network inspect"
         ) {
             CliError::option(message)
         } else {

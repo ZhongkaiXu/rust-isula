@@ -16,6 +16,12 @@ impl proto::network_service_server::NetworkService for FakeNetworks {
     ) -> Result<Response<proto::NetworkCreateResponse>, Status> {
         Err(Status::unimplemented("create"))
     }
+    async fn inspect(
+        &self,
+        _: Request<proto::NetworkInspectRequest>,
+    ) -> Result<Response<proto::NetworkInspectResponse>, Status> {
+        Err(Status::unimplemented("inspect"))
+    }
     async fn list(
         &self,
         request: Request<proto::NetworkListRequest>,

@@ -2,6 +2,7 @@
 syntax = "proto3";
 package network;
 service NetworkService {
+    rpc Inspect(NetworkInspectRequest) returns (NetworkInspectResponse);
     rpc Create(NetworkCreateRequest) returns (NetworkCreateResponse);
     rpc List(NetworkListRequest) returns (NetworkListResponse);
 }
@@ -28,6 +29,13 @@ message NetworkCreateRequest {
 }
 message NetworkCreateResponse {
     string name = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message NetworkInspectRequest { string name = 1; }
+message NetworkInspectResponse {
+    string NetworkJSON = 1;
     uint32 cc = 2;
     string errmsg = 3;
 }

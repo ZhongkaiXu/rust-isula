@@ -5,12 +5,12 @@ use serde_json::Value;
 use crate::cli::{CliError, Invocation};
 use crate::grpc;
 
-struct Field {
-    path: Vec<String>,
-    json: bool,
+pub(crate) struct Field {
+    pub(crate) path: Vec<String>,
+    pub(crate) json: bool,
 }
 
-fn fields(mut text: &str) -> Result<Vec<Field>, String> {
+pub(crate) fn fields(mut text: &str) -> Result<Vec<Field>, String> {
     let mut fields = Vec::new();
     while !text.trim().is_empty() {
         text = text
@@ -52,7 +52,7 @@ fn fields(mut text: &str) -> Result<Vec<Field>, String> {
     Ok(fields)
 }
 
-fn select<'a>(value: &'a Value, path: &[String]) -> Option<&'a Value> {
+pub(crate) fn select<'a>(value: &'a Value, path: &[String]) -> Option<&'a Value> {
     let Some((key, rest)) = path.split_first() else {
         return Some(value);
     };
@@ -86,7 +86,7 @@ fn string(output: &mut String, value: &str, quoted: bool) {
     }
 }
 
-fn render(output: &mut String, value: &Value, indent: usize, json: bool) {
+pub(crate) fn render(output: &mut String, value: &Value, indent: usize, json: bool) {
     match value {
         Value::Object(map) => {
             output.push('{');
