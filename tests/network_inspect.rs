@@ -10,6 +10,12 @@ struct FakeNetworks {
 }
 #[tonic::async_trait]
 impl proto::network_service_server::NetworkService for FakeNetworks {
+    async fn remove(
+        &self,
+        _: Request<proto::NetworkRemoveRequest>,
+    ) -> Result<Response<proto::NetworkRemoveResponse>, Status> {
+        Err(Status::unimplemented("remove"))
+    }
     async fn list(
         &self,
         _: Request<proto::NetworkListRequest>,

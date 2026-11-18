@@ -16,6 +16,12 @@ impl proto::network_service_server::NetworkService for FakeNetworks {
     ) -> Result<Response<proto::NetworkInspectResponse>, Status> {
         Err(Status::unimplemented("inspect"))
     }
+    async fn remove(
+        &self,
+        _: Request<proto::NetworkRemoveRequest>,
+    ) -> Result<Response<proto::NetworkRemoveResponse>, Status> {
+        Err(Status::unimplemented("remove"))
+    }
     async fn list(
         &self,
         _: Request<proto::NetworkListRequest>,

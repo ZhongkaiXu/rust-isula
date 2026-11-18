@@ -27,6 +27,12 @@ async fn main() {
                 process::exit(1);
             }
         }
+        Ok(Action::Invoke(command)) if command.name == "network rm" => {
+            if let Err(error) = networks::remove::run(&command).await {
+                eprintln!("risula network rm: {error}");
+                process::exit(1);
+            }
+        }
         Ok(Action::Invoke(command)) if command.name == "network inspect" => {
             if let Err(error) = networks::inspect::run(&command).await {
                 eprintln!("risula network inspect: {error}");

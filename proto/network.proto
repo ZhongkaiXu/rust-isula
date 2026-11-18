@@ -2,6 +2,7 @@
 syntax = "proto3";
 package network;
 service NetworkService {
+    rpc Remove(NetworkRemoveRequest) returns (NetworkRemoveResponse);
     rpc Inspect(NetworkInspectRequest) returns (NetworkInspectResponse);
     rpc Create(NetworkCreateRequest) returns (NetworkCreateResponse);
     rpc List(NetworkListRequest) returns (NetworkListResponse);
@@ -36,6 +37,13 @@ message NetworkCreateResponse {
 message NetworkInspectRequest { string name = 1; }
 message NetworkInspectResponse {
     string NetworkJSON = 1;
+    uint32 cc = 2;
+    string errmsg = 3;
+}
+
+message NetworkRemoveRequest { string name = 1; }
+message NetworkRemoveResponse {
+    string name = 1;
     uint32 cc = 2;
     string errmsg = 3;
 }

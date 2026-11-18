@@ -491,7 +491,7 @@ fn options_for(command: &str) -> impl Iterator<Item = &'static OptionSpec> {
         "stop" => STOP_OPTIONS,
         "start" => START_OPTIONS,
         "exec" => EXEC_OPTIONS,
-        "attach" | "cp" | "port" | "volume rm" => ATTACH_OPTIONS,
+        "attach" | "cp" | "port" | "volume rm" | "network rm" => ATTACH_OPTIONS,
         "logs" => LOGS_OPTIONS,
         "events" => EVENTS_OPTIONS,
         "export" => EXPORT_OPTIONS,
@@ -540,6 +540,7 @@ fn accepts_bool_value(command: &str, option: &str) -> bool {
             | "network ls"
             | "network create"
             | "network inspect"
+            | "network rm"
     ) && options_for(command).any(|spec| spec.long == option && !spec.takes_value)
     {
         return true;
@@ -694,6 +695,9 @@ fn check_args(command: &str, options: &[ParsedOption], args: &[String]) -> Resul
         "pull" if args.len() != 1 || args[0].is_empty() => {
             Err("pull requires one image name".to_string())
         }
+        "network rm" if args.is_empty() || args.len() >= 1000 => {
+            Err("network rm requires between 1 and 999 networks".into())
+        }
         "network inspect" if args.is_empty() || args.len() >= 1000 => {
             Err("network inspect requires between 1 and 999 networks".into())
         }
@@ -823,6 +827,7 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                         | "network ls"
                         | "network create"
                         | "network inspect"
+                        | "network rm"
                 ) && spec.takes_value
                 {
                     let inline = letters.as_str().strip_prefix('=');
@@ -907,6 +912,7 @@ fn parse_inner(args: &[String], env_host: Option<&str>) -> Result<Action, CliErr
                 | "network ls"
                 | "network create"
                 | "network inspect"
+                | "network rm"
         ) {
             CliError::option(message)
         } else {

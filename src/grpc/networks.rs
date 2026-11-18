@@ -61,3 +61,22 @@ pub async fn inspect(host: &str, name: &str) -> Result<String, String> {
     }
     Ok(response.network_json)
 }
+
+pub async fn remove(host: &str, name: &str) -> Result<String, String> {
+    if name.is_empty() {
+        return Err("Missing network name in the request".into());
+    }
+    let channel = connect_with_timeout(host, None).await?;
+    let response = proto::network_service_client::NetworkServiceClient::new(channel)
+        .remove(proto::NetworkRemoveRequest { name: name.into() })
+        .await
+        .map_err(|e| format!("network remove RPC failed: {e}"))?
+        .into_inner();
+    if response.cc != 0 || response.name.is_empty() {
+        return Err(format!(
+            "server error (code {}): {}",
+            response.cc, response.errmsg
+        ));
+    }
+    Ok(response.errmsg)
+}
